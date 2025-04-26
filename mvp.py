@@ -10,6 +10,7 @@ Here the client literally just calls the server's methods directly. What's impor
 """
 
 from MCPMessage import (
+    MCPMessage,
     PromptRequest,
     PromptResponse,
     PromptDefinition,
@@ -21,6 +22,8 @@ from MCPMessage import (
     ToolResponse,
     ToolDefinition,
 )
+from MCPRegistry import Registry
+from MCPTool import MCPTool
 from typing import Optional
 from pydantic import BaseModel
 import mcplite
@@ -57,8 +60,49 @@ class Server:
         Receive JSON from the client, parse it, and return a response.
         """
         # Validate the JSON against our pydantic objects.
-        # Process the request and return a response.
-        # For MVP, client will just run this method and get the json string back.
+        try:
+            tool_request = ToolRequest(**json.loads(json_str))
+        except Exception as e:
+            print(f"Error: {e}")
+            return json.dumps({"error": "Invalid request format."})
+        tool_response = self.process_request(tool_request)
+        # Convert the response to JSON and return it.
+        return tool_response.model_dump_json()
+
+    def process_request(self, request: ToolRequest) -> ToolResponse:
+        """
+        Process the request and return a response.
+        """
+        """
+        class ToolResponse(MCPMessage):
+    class Result(BaseModel):
+        content: list[dict]
+
+    jsonrpc: str
+    id: int
+    result: Result
+
+"""
+        # Validate the request.
+        try:
+            tool_request = ToolRequest(**request.model_dump())
+        except Exception as e:
+            raise ValueError("Invalid request format.")
+        function_name = tool_request.params.name
+        function_args = tool_request.params.arguments
+        for tool in self.registry.tools:
+            if tool.name == function_name:
+                # Call the function with the provided arguments.
+                result = tool.function(**function_args)
+                # Create a response object.
+                response = ToolResponse(
+                    jsonrpc=tool_request.jsonrpc,
+                    id=tool_request.id,
+                    result={"content": [{"result": result}]},
+                )
+                return response
+
+        # Check if the function exists in the registry.
 
 
 class Client:
@@ -130,10 +174,12 @@ if __name__ == "__main__":
     example_request = """
 {
   "method": "tools/call",
-  "name": "add",
-  "arguments": {
-    "a": 9801,
-    "b": 1444
+  "params": {
+    "name": "add",
+    "arguments": {
+        "a": 9801,
+        "b": 1444
+    }
   }
 }
 """
@@ -157,7 +203,10 @@ if __name__ == "__main__":
     client.initialize()
     # Mock network call for request
     json_obj = json.loads(example_request)
+    # Note that we took out jsonrp and id fields since that's application logic, not LLM, so we need to add.
+    json_obj.update({"jsonrpc": "2.0", "id": 1})
     example_request_pydantic = ToolRequest(**json_obj)
+    breakpoint()
     answer_json = client.send_request(example_request_pydantic)
     answer_dict = answer_json.model_dump()
     answer_pydantic = ToolResponse(**answer_dict)

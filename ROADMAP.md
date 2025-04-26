@@ -1,0 +1,5 @@
+- [ ] Stand up the framework as Direct Transport (with no actual Transport implementation) -- in other words, you IMPORT the server class into client code to run it.
+- [ ] Add an abstracted Transport class
+- [ ] Implement HTTP (uvicorn / FastAPI as appropriate)
+- [ ] Implement STDIO
+- [ ] Implement SSE

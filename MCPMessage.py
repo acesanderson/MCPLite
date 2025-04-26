@@ -86,10 +86,14 @@ class ResourceResponse(MCPMessage):
 
 # Tool
 class ToolRequest(MCPMessage):
+    class ToolParams(BaseModel):
+        name: str
+        arguments: dict
+
     jsonrpc: str
     id: int
     method: str
-    params: dict
+    params: ToolParams
 
 
 class ToolResponse(MCPMessage):
