@@ -1,6 +1,7 @@
 from MCPMessage import MCPMessage
 from Server import Server
 from MCPRegistry import ClientRegistry
+from Transport import Transport, DirectTransport
 
 # from Chain.mcp.Transport import ClientTransport
 from typing import Optional
@@ -8,9 +9,9 @@ import json
 
 
 class Client:
-    def __init__(self, server: Server):
-        self.server: Server = Server()
+    def __init__(self, transport: Transport):
         self.registry = ClientRegistry()
+        self.transport = transport
         # self.transport = ----- we can use DirectClientTransport as a dummy transport.
 
     def initialize(self):
