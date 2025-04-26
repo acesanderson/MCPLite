@@ -1,9 +1,24 @@
 from MCPLite.messages.MCPMessage import MCPMessage
 from pydantic import BaseModel
+from typing import Literal, Any
+from uuid import uuid4
+
+
+class JSONRPCResponse(BaseModel):
+    jsonrpc: Literal["2.0"] = "2.0"
+    id: int | str
+    result: Any | None = None
 
 
 class MCPResponse(MCPMessage):
-    pass
+    result: BaseModel | dict | None = None
+
+    def to_json_rpc(self) -> JSONRPCResponse:
+        return JSONRPCResponse(
+            jsonrpc="2.0",
+            id=uuid4().hex,
+            result=self.result,
+        )
 
 
 # Prompt
@@ -20,15 +35,11 @@ class PromptResponse(MCPResponse):
         description: str
         messages: list[Message]
 
-    jsonrpc: str
-    id: int | str
     result: Result
 
 
 # Resource
 class ResourceResponse(MCPResponse):
-    jsonrpc: str
-    id: int | str
     result: dict
 
 
@@ -37,8 +48,6 @@ class ToolResponse(MCPResponse):
     class Result(BaseModel):
         content: list[dict]
 
-    jsonrpc: str
-    id: int | str
     result: Result
 
 
