@@ -1,0 +1,34 @@
+Given this input:
+<input>
+{{input}}
+</input>
+
+You will produce this output:
+<output>
+{{output}}
+</output>
+
+You will interleave Thought (<thought>), Tool Name (<tool>), and Tool Args (<args>), and receive a resulting Observation (<observation>).
+
+Thought can reason about the current situation, and Tool Name can be the following types:
+{% for tool_object in tool_objects %}
+- {{ tool_object.name }}, whose description is <desc>{{ tool_object.description }}</desc>. It takes arguments {{ tool_object.args }} in JSON format.
+{% endfor %}
+- finish, whose description is <desc>Signals that the final recommendation is available and marks the task as complete.</desc>. It takes arguments {"final_answer": str} in JSON format.
+
+A typical interaction might look like:
+<thought>First, I need to convert the temperature to fahrenheit</thought>
+<tool>convert_temperature</tool>
+<args>{"celsius": -5.0}</args>
+<observation>23.0</observation>
+<thought>Now I can calculate the wind chill using this temperature and the given wind speed</thought>
+<tool>calculate_wind_chill</tool>
+<args>{"temp_fahrenheit": 23.0, "wind_speed_mph": 10.0}</args>
+<observation>9.8</observation>
+<thought>With the felt temperature, I can get appropriate clothing recommendations</thought>
+<tool>get_clothing_recommendation</tool>
+<args>{"felt_temp": 9.8}</args>
+<observation>Heavy winter coat, layers, gloves, winter hat, and insulated boots required</observation>
+<thought>I now have all the information needed to provide a complete recommendation</thought>
+<tool>finish</tool>
+<args>{"final_answer": "Wear a heavy winter coat."}</args>
