@@ -3,8 +3,16 @@ This captures most rsponses, however note that there are Response types in the i
 """
 
 from MCPLite.messages.MCPMessage import MCPMessage
-from pydantic import BaseModel
-from typing import Literal, Any
+from MCPLite.messages.Definitions import (
+    ResourceDefinition,
+    PromptDefinition,
+    ToolDefinition,
+)
+from MCPLite.primitives.MCPPrompt import MCPPrompt
+from MCPLite.primitives.MCPResource import MCPResource
+from MCPLite.primitives.MCPTool import MCPTool
+from pydantic import BaseModel, Field
+from typing import Literal, Any, Optional, Union
 from uuid import uuid4
 
 
@@ -55,8 +63,63 @@ class ToolResponse(MCPResponse):
     result: Result
 
 
+# List results
+class ListPromptsResult(MCPResponse):
+    """
+    The server's response to a prompts/list request from the client.
+    """
+
+    prompts: list[MCPPrompt]
+    nextCursor: Optional[str] = Field(
+        default=None,
+        description="An opaque token representing the pagination position after the last returned result.",
+    )
+    meta: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
+        alias="_meta",
+    )
+
+
+class ListResourcesResult(MCPResponse):
+    """
+    The server's response to a resources/list request from the client.
+    """
+
+    resources: list[MCPResource]
+    nextCursor: Optional[str] = Field(
+        default=None,
+        description="An opaque token representing the pagination position after the last returned result.",
+    )
+    meta: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
+        alias="_meta",
+    )
+
+
+class ListToolsResult(MCPResponse):
+    """
+    The server's response to a tools/list request from the client.
+    """
+
+    tools: list[MCPTool]
+    nextCursor: Optional[str] = Field(
+        default=None,
+        description="An opaque token representing the pagination position after the last returned result.",
+    )
+    meta: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
+        alias="_meta",
+    )
+
+
 MCPResponses = [
     PromptResponse,
     ResourceResponse,
     ToolResponse,
+    ListPromptsResult,
+    ListResourcesResult,
+    ListToolsResult,
 ]

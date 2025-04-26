@@ -1,4 +1,3 @@
-from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 from MCPLite.messages.Notifications import MCPNotification
 
