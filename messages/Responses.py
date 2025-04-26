@@ -1,4 +1,4 @@
-from MCPMessage import MCPMessage
+from MCPLite.messages.MCPMessage import MCPMessage
 from pydantic import BaseModel
 
 

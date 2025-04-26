@@ -1,20 +1,16 @@
 from pydantic import BaseModel
-from MCPMessage import (
+from MCPLite.messages.MCPMessage import MCPMessage
+from MCPLite.messages.Requests import ResourceRequest, ToolRequest, PromptRequest
+from MCPLite.messages.Responses import ResourceResponse, ToolResponse, PromptResponse
+from MCPLite.messages.Definitions import (
     ResourceDefinition,
     ResourceTemplateDefinition,
     ToolDefinition,
     PromptDefinition,
-    PromptRequest,
-    PromptResponse,
-    ResourceRequest,
-    ResourceResponse,
-    ToolRequest,
-    ToolResponse,
-    MCPMessage,
 )
-from MCPTool import MCPTool
-from MCPResource import MCPResource
-from MCPPrompt import MCPPrompt
+from MCPLite.primitives.MCPTool import MCPTool
+from MCPLite.primitives.MCPResource import MCPResource
+from MCPLite.primitives.MCPPrompt import MCPPrompt
 
 
 class ClientRegistry(BaseModel):

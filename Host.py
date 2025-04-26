@@ -6,23 +6,20 @@ Host takes optional clients.
 """
 
 import json
-from Chain.message.message import Message
-from Chain.model.model import Model
-from Chain.prompt.prompt import Prompt
-from Chain.message.messagestore import MessageStore
-from MCPMessage import MCPMessage, parse_message
-from MCPRegistry import ClientRegistry
+from Chain import Message, Model, Prompt, MessageStore
+from MCPLite.messages.MCPMessage import MCPMessage
+from MCPLite.messages.Requests import parse_request
+from MCPLite.primitives.MCPRegistry import ClientRegistry
 from Client import Client
 from pathlib import Path
 from typing import Optional
-from uuid import uuid4  # for unique ID generation
 
 # For development, note that our Primitives are not actually used at all on client/host side.
-from MCPTool import MCPTool
-from MCPResource import MCPResource
+from MCPLite.primitives.MCPTool import MCPTool
+from MCPLite.primitives.MCPResource import MCPResource
 
 dir_path = Path(__file__).parent
-system_prompt_path = dir_path / "mcp_system_prompt.jinja2"
+system_prompt_path = dir_path / "prompts" / "mcp_system_prompt.jinja2"
 
 
 class Host:  # ineerit from Chat?
@@ -78,7 +75,7 @@ class Host:  # ineerit from Chat?
                         breakpoint()
 
                         # Use a separate validation function
-                        mcpmessage = parse_message(json_data)
+                        mcpmessage = parse_request(json_data)
 
                         if mcpmessage:
                             print("Valid MCP message found:", mcpmessage)

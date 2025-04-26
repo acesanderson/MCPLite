@@ -1,7 +1,6 @@
-from MCPMessage import MCPMessage
-from Server import Server
-from MCPRegistry import ClientRegistry
-from Transport import Transport, DirectTransport
+from MCPLite.messages.MCPMessage import MCPMessage
+from MCPLite.primitives.MCPRegistry import ClientRegistry
+from MCPLite.transport.Transport import Transport, DirectTransport
 
 # from Chain.mcp.Transport import ClientTransport
 from typing import Optional
