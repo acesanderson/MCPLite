@@ -1,20 +1,21 @@
 """
 Initialization messages.
 Client sends InitializeRequest as first part of handshake.
+Inherits from MCPRequest (and can be blessed to JSONRPCRequest).
 """
 
 from pydantic import BaseModel, Field
-from typing import Dict, Any, Optional, Literal
+from typing import Dict, Any, Optional
+from MCPLite.messages.Requests import MCPRequest
 
 
 class Implementation(BaseModel):
+    """
+    Describes the name and version of an MCP implementation.
+    """
+
     name: str
     version: str
-
-    class Config:
-        json_schema_extra = {
-            "description": "Describes the name and version of an MCP implementation."
-        }
 
 
 class Roots(BaseModel):
@@ -25,6 +26,10 @@ class Roots(BaseModel):
 
 
 class ClientCapabilities(BaseModel):
+    """
+    Capabilities a client may support. Known capabilities are defined here, in this schema, but this is not a closed set: any client can define its own, additional capabilities.
+    """
+
     experimental: Optional[Dict[str, Dict[str, Any]]] = Field(
         default=None,
         description="Experimental, non-standard capabilities that the client supports.",
@@ -38,9 +43,6 @@ class ClientCapabilities(BaseModel):
 
     class Config:
         extra = "allow"  # Allows additional properties beyond those explicitly defined
-        json_schema_extra = {
-            "description": "Capabilities a client may support. Known capabilities are defined here, in this schema, but this is not a closed set: any client can define its own, additional capabilities."
-        }
 
 
 class InitializeRequestParams(BaseModel):
@@ -51,14 +53,13 @@ class InitializeRequestParams(BaseModel):
     )
 
 
-class InitializeRequest(BaseModel):
-    method: Literal["initialize"]
-    params: InitializeRequestParams
+class InitializeRequest(MCPRequest):
+    """
+    This request is sent from the client to the server when it first connects, asking it to begin initialization.
+    """
 
-    class Config:
-        json_schema_extra = {
-            "description": "This request is sent from the client to the server when it first connects, asking it to begin initialization."
-        }
+    method: str = "initialize"
+    params: InitializeRequestParams
 
 
 def minimal_client_initialization() -> InitializeRequest:
@@ -96,3 +97,4 @@ def minimal_client_initialization() -> InitializeRequest:
 if __name__ == "__main__":
     i = minimal_client_initialization()
     print(i)
+    print(i.model_dump_json(indent=2))

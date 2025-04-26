@@ -13,41 +13,35 @@ Server - The internal class that handles routing requests to the appropriate han
 - Wouldn't be directly exposed to users of your framework
 """
 
-from MCPTool import MCPTool
-from MCPResource import MCPResource
-from MCPPrompt import MCPPrompt
-from MCPRegistry import Registry
+from MCPLite.primitives.MCPTool import MCPTool
+from MCPLite.primitives.MCPResource import MCPResource
+from MCPLite.primitives.MCPPrompt import MCPPrompt
+from MCPLite.primitives.MCPRegistry import ServerRegistry
+from MCPLite.server.Server import Server
 from typing import Callable
 from pathlib import Path
 from Chain import Prompt
 
-dir_path = Path(__file__).resolve().parent
-system_prompt_path = dir_path / "mcp_system_prompt.jinja2"
 
-
-registry: dict = {"tools": [], "resources": [], "prompts": []}
-
-
-# Initialization functions
-def generate_system_prompt():
+class MCPLite:
     """
-    Return the capabilities of this MCP implementation.
-    This is a simplified version of the MCP capability negotiation.
-    Specifically, this renders capabilities as a string for LLMs to use.
+    The main class for the MCPLite framework.
+    This class provides decorators for registering tools, resources, and prompts.
+    It also manages the server instance and provides a run method.
     """
-    system_prompt = Prompt(system_prompt_path.read_text())
-    # Check which capabilities we support based on registered items
-    # Later implementation will require an entire initialization handshake, where servers and clients expose capabilities.
-    # We want the definitions; we render pydantic Definition as JSON, assign [] if list is empty.
-    input_variables = {
-        k: [
-            primitive.definition.model_dump_json(indent=2)
-            for primitive in registry.get(k, [])
-        ]
-        for k in registry
-    }
-    rendered = system_prompt.render(input_variables)
-    return rendered
+
+    def __init__(self):
+        self.registry = ServerRegistry()
+        self.server = Server(self.registry)
+
+    def run(self):
+        """
+        Start the server.
+        """
+        self.server.run()
+
+    def __call__(self, *args, **kwargs):
+        return self.server(*args, **kwargs)
 
 
 # Add these functions to handle MCP protocol operations

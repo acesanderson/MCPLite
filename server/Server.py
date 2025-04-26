@@ -3,14 +3,15 @@ See notes in mcplite.py to see the distinction between Server and MCPLite classe
 This should mirror the Client class.
 """
 
-from MCPRegistry import ServerRegistry
+from pydantic import Json
+from MCPLite.transport.Transport import Transport, DirectTransport
 
 
 class Server:
-    def __init__(self):
-        self.registry = ServerRegistry()
+    def __init__(self, transport: Transport = "direct transport"):
+        self.transport = transport
 
-    def initialize(self, json: str):
+    def initialize(self, json_string: str):
         """
         Initialize the server.
         """
@@ -18,10 +19,10 @@ class Server:
         # For MVP, client will just grab the registry from the class :)
         pass
 
-    def return_answer(
+    def process_message(
         self,
-        json_str: str,
-    ) -> str:
+        json_str: Json,
+    ) -> Json:
         """
         Receive JSON from the client, parse it, and return a response.
         """

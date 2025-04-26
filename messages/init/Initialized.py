@@ -1,17 +1,17 @@
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
+from MCPLite.messages.Notifications import MCPNotification
 
 
-class InitializedNotification(BaseModel):
+class InitializedNotification(MCPNotification):
+    """
+    This notification is sent from the client to the server after initialization has finished.
+    """
+
     method: str = "notifications/initialized"
     params: Optional[Dict[str, Any]] = Field(
         default={}, description="Optional parameters for the notification"
     )
-
-    class Config:
-        json_schema_extra = {
-            "description": "This notification is sent from the client to the server after initialization has finished."
-        }
 
 
 def create_minimal_initialized_notification() -> InitializedNotification:

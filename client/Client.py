@@ -44,4 +44,4 @@ class Client:
 
 if __name__ == "__main__":
     server = Server()
-    transport = DirectTransport(server.process_message)
+    transport = DirectTransport()

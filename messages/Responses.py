@@ -1,3 +1,7 @@
+"""
+This captures most rsponses, however note that there are Response types in the initialization for example that import from this script.
+"""
+
 from MCPLite.messages.MCPMessage import MCPMessage
 from pydantic import BaseModel
 from typing import Literal, Any

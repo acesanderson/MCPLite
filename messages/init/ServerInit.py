@@ -6,10 +6,15 @@ Default is yes for all.
 
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
-from ClientInit import Implementation
+from MCPLite.messages.init.ClientInit import Implementation
+from MCPLite.messages.Responses import MCPResponse
 
 
 class ServerCapabilities(BaseModel):
+    """
+    Capabilities that a server may support. Known capabilities are defined here, in this schema, but this is not a closed set: any server can define its own, additional capabilities.
+    """
+
     experimental: Optional[Dict[str, Dict[str, Any]]] = Field(
         default=None,
         description="Experimental, non-standard capabilities that the server supports.",
@@ -30,12 +35,13 @@ class ServerCapabilities(BaseModel):
 
     class Config:
         extra = "allow"  # Allows additional properties beyond those explicitly defined
-        json_schema_extra = {
-            "description": "Capabilities that a server may support. Known capabilities are defined here, in this schema, but this is not a closed set: any server can define its own, additional capabilities."
-        }
 
 
-class InitializeResult(BaseModel):
+class InitializeResult(MCPResponse):
+    """
+    After receiving an initialize request from the client, the server sends this response.
+    """
+
     capabilities: ServerCapabilities
     protocolVersion: str = Field(
         description="The version of the Model Context Protocol that the server wants to use. This may not match the version that the client requested. If the client cannot support this version, it MUST disconnect."
@@ -50,11 +56,6 @@ class InitializeResult(BaseModel):
         description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
         alias="_meta",
     )
-
-    class Config:
-        json_schema_extra = {
-            "description": "After receiving an initialize request from the client, the server sends this response."
-        }
 
 
 def minimal_server_initialization() -> InitializeResult:

@@ -1,8 +1,32 @@
-from pydantic import BaseModel, Field
-from typing import Literal, Optional
+from pydantic import BaseModel, Field, RootModel
+from typing import Literal, Optional, Dict, Any
 from MCPLite.messages.MCPMessage import MCPMessage
 from uuid import uuid4
 import json
+
+
+class Method(RootModel):
+    """
+    A class to represent the method of a request.
+    """
+
+    root: Literal[
+        "completion/complete",
+        "initialize",
+        "logging/setLevel",
+        "ping",
+        "prompts/get",
+        "prompts/list",
+        "resources/list",
+        "resources/read",
+        "resources/subscribe",
+        "resources/templates/list",
+        "resources/unsubscribe",
+        "roots/list",
+        "sampling/createMessage",
+        "tools/call",
+        "tools/list",
+    ]
 
 
 class JSONRPCRequest(BaseModel):
@@ -13,12 +37,12 @@ class JSONRPCRequest(BaseModel):
 
     jsonrpc: Literal["2.0"] = "2.0"
     id: int | str
-    method: Literal["resources/read", "tools/call"]
+    method: Method
     params: dict | None
 
 
 class MCPRequest(MCPMessage):
-    method: Literal["resources/read", "tools/call"]
+    method: Method
     params: Optional[BaseModel] = Field(
         None,
         description="The parameters for the request. This is a dictionary of key-value pairs.",
@@ -41,7 +65,7 @@ class PromptRequest(MCPRequest):
         name: str
         arguments: dict
 
-    method: str
+    method: str = "prompts/get"
     params: Params
 
 
@@ -49,7 +73,7 @@ class ResourceRequest(MCPRequest):
     class ResourceParams(BaseModel):
         uri: str
 
-    method: Literal["resources/read"]
+    method: str = "resources/read"
     params: ResourceParams
 
 
@@ -58,14 +82,50 @@ class ToolRequest(MCPRequest):
         name: str
         arguments: dict
 
-    method: Literal["tools/call"]
+    method: str = "tools/call"
     params: ToolParams
+
+
+class ListResourcesRequest(MCPRequest):
+    """
+    Sent from the client to request a list of resources the server has.
+    """
+
+    method: str = "resources/list"
+    params: Optional[Dict[str, Any]] = Field(
+        default_factory=dict, description="Optional parameters for the request"
+    )
+
+
+class ListPromptsRequest(MCPRequest):
+    """
+    Sent from the client to request a list of prompts and prompt templates the server has.
+    """
+
+    method: str = "prompts/list"
+    params: Optional[Dict[str, Any]] = Field(
+        default_factory=dict, description="Optional parameters for the request"
+    )
+
+
+class ListToolsRequest(MCPRequest):
+    """
+    Sent from the client to request a list of tools the server has.
+    """
+
+    method: str = "tools/list"
+    params: Optional[Dict[str, Any]] = Field(
+        default_factory=dict, description="Optional parameters for the request"
+    )
 
 
 MCPRequests = [
     PromptRequest,
     ResourceRequest,
     ToolRequest,
+    ListResourcesRequest,
+    ListPromptsRequest,
+    ListToolsRequest,
 ]
 
 
