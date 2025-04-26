@@ -4,6 +4,13 @@ from MCPMessage import (
     ResourceTemplateDefinition,
     ToolDefinition,
     PromptDefinition,
+    PromptRequest,
+    PromptResponse,
+    ResourceRequest,
+    ResourceResponse,
+    ToolRequest,
+    ToolResponse,
+    MCPMessage,
 )
 from MCPTool import MCPTool
 from MCPResource import MCPResource
@@ -108,3 +115,47 @@ class ServerRegistry(BaseModel):
             raise TypeError(
                 f"Cannot add {type(self)} and {type(other)}. Both must be of type ServerRegistry."
             )
+
+    def get(self, name: MCPMessage) -> MCPTool | MCPResource | MCPPrompt | None:
+        """
+        Get a tool, resource, or prompt being requested by an MCPMessage request.
+        """
+        if isinstance(
+            name, ResourceRequest
+        ):  # Need to double check schema if you are getting errors.
+            return self._get_resource(name.params.name)
+        elif isinstance(name, ToolRequest):
+            return self._get_tool(name.params.name)
+        elif isinstance(name, PromptRequest):
+            return self._get_prompt(name.params.name)
+        else:
+            raise TypeError(
+                f"Cannot get {type(name)}. Must be of type ResourceRequest, ToolRequest, or PromptRequest."
+            )
+
+    def _get_tool(self, name: str) -> MCPTool | None:
+        """
+        Get a tool by name.
+        """
+        for tool in self.tools:
+            if tool.name == name:
+                return tool
+        return None
+
+    def _get_resource(self, name: str) -> MCPResource | None:
+        """
+        Get a resource by name.
+        """
+        for resource in self.resources:
+            if resource.name == name:
+                return resource
+        return None
+
+    def _get_prompt(self, name: str) -> MCPPrompt | None:
+        """
+        Get a prompt by name.
+        """
+        for prompt in self.prompts:
+            if prompt.name == name:
+                return prompt
+        return None

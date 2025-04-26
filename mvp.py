@@ -22,11 +22,10 @@ from MCPMessage import (
     ToolResponse,
     ToolDefinition,
 )
-from MCPRegistry import Registry
+from MCPRegistry import ClientRegistry, ServerRegistry
 from MCPTool import MCPTool
 from typing import Optional
 from pydantic import BaseModel
-import mcplite
 import json
 
 
@@ -42,7 +41,7 @@ class Host:
 
 class Server:
     def __init__(self):
-        self.registry = Registry()
+        self.registry = ServerRegistry()
 
     def initialize(self, json: str):
         """
@@ -84,31 +83,29 @@ class Server:
 
 """
         # Validate the request.
-        try:
-            tool_request = ToolRequest(**request.model_dump())
-        except Exception as e:
-            raise ValueError("Invalid request format.")
-        function_name = tool_request.params.name
-        function_args = tool_request.params.arguments
-        for tool in self.registry.tools:
-            if tool.name == function_name:
-                # Call the function with the provided arguments.
-                result = tool.function(**function_args)
-                # Create a response object.
-                response = ToolResponse(
-                    jsonrpc=tool_request.jsonrpc,
-                    id=tool_request.id,
-                    result={"content": [{"result": result}]},
-                )
-                return response
-
-        # Check if the function exists in the registry.
+        tool = self.registry.get(request)
+        if not tool:
+            return ToolResponse(
+                jsonrpc=request.jsonrpc,
+                id=request.id,
+                result={"content": [{"error": "Tool not found."}]},
+            )
+        else:
+            args = request.params.arguments
+            result = tool.function(**args)
+            # Create a response object.
+            response = ToolResponse(
+                jsonrpc=request.jsonrpc,
+                id=request.id,
+                result={"content": [{"result": result}]},
+            )
+            return response
 
 
 class Client:
     def __init__(self, server: Server):
         self.server: Server = Server()
-        self.registry = Registry()
+        self.registry = ClientRegistry()
 
     def initialize(self):
         """
@@ -140,7 +137,7 @@ class Client:
 
 class ClientEnvironment:
     def __init__(self):
-        self.registry = Registry()
+        self.registry = ClientRegistry()
         self.clients: list[Optional[Client]] = []
 
     def add_client(self, client: Client):
@@ -185,7 +182,7 @@ if __name__ == "__main__":
 """
 
     # Dummy tool
-    @mcplite.tool
+    # @mcplite.tool
     def add(a: int, b: int) -> int:
         """
         Add two numbers.
@@ -193,7 +190,7 @@ if __name__ == "__main__":
         return a + b
 
     # The objects that will be working together
-    tool = mcplite.registry["tools"][0]
+    tool = MCPTool(function=add)
     host = Host(example_request)
     host.client_environment = ClientEnvironment()
     server = Server()
@@ -206,7 +203,6 @@ if __name__ == "__main__":
     # Note that we took out jsonrp and id fields since that's application logic, not LLM, so we need to add.
     json_obj.update({"jsonrpc": "2.0", "id": 1})
     example_request_pydantic = ToolRequest(**json_obj)
-    breakpoint()
     answer_json = client.send_request(example_request_pydantic)
     answer_dict = answer_json.model_dump()
     answer_pydantic = ToolResponse(**answer_dict)

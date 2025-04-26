@@ -2,12 +2,15 @@ from typing import Callable
 from inspect import signature
 import json
 from MCPMessage import ToolDefinition, ToolRequest, ToolResponse
+from pydantic import BaseModel, Field
 
 
 # Tool class
-class MCPTool:
+class MCPTool(BaseModel):
     """
-    Resources are parameterless functions that return a static resource (typically a string but could be anything that an LLM would interpret).
+    Tools are parameterized functions that return a dynamic resource (typically a string but could be anything that an LLM would interpret).
+
+    Note: the function must be named, have a docstring, and have type annotations for all parameters or this will throw an error.
 
     Example usage:
 
@@ -16,23 +19,40 @@ class MCPTool:
 
     @tool_registry.register
     def my_tool(param1: str, param2: int):
-        "" This is a tool that returns an answer. ""
+    "" This is a tool that returns an answer. ""
         return param1 + str(param2)
     ```
     name = my_tool (the function name)
     description = "This is a tool that returns a string." (the docstring)
     """
 
-    def __init__(self, function: Callable):
-        self.function = function
-        try:
-            self.description = function.__doc__.strip()  # type: ignore
-        except AttributeError:
-            print("Function needs a docstring")
-        self.input_schema = self.get_input_schema()
-        self.name = function.__name__
+    function: Callable
+    description: str = Field(default="")
+    name: str = Field(default="")
+    input_schema: dict = Field(default_factory=dict)
 
-    def get_input_schema(self) -> dict:
+    def model_post_init(self, __context) -> None:
+        """
+        This method is called after the model is created.
+        It sets the name and description of the tool.
+        """
+        self.name = self._get_name()
+        self.description = self._get_description()
+        self.input_schema = self._get_input_schema()
+
+    def _get_name(self) -> str:
+        try:
+            return self.function.__name__
+        except AttributeError:
+            raise ValueError("Function needs a name, did you just slip me a lambdas?")
+
+    def _get_description(self) -> str:
+        try:
+            return self.function.__doc__.strip()  # type: ignore
+        except AttributeError:
+            raise ValueError("Function needs a docstring.")
+
+    def _get_input_schema(self) -> dict:
         sig = signature(self.function)
         params = sig.parameters
         input_schema = {

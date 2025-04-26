@@ -8,6 +8,7 @@ from MCPMessage import (
     ResourceRequest,
     ResourceTemplateDefinition,
 )
+from pydantic import BaseModel
 
 uri_regex = r"^[a-zA-Z][a-zA-Z\d+\-.]*://[^\s/$.?#].[^\s]*"
 
@@ -25,7 +26,7 @@ def get_string_size_in_bytes(content):
 
 
 # Tool class
-class MCPResource:
+class MCPResource(BaseModel):
     """
     Resources are parameterless functions that return a static resource (typically a string but could be anything that an LLM would interpret).
 

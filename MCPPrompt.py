@@ -2,10 +2,11 @@ from typing import Callable
 from inspect import signature
 from MCPMessage import PromptDefinition, PromptResponse, PromptRequest
 import json
+from pydantic import BaseModel
 
 
 # Tool class
-class MCPPrompt:
+class MCPPrompt(BaseModel):
     """
     Resources are parameterless functions that return a static resource (typically a string but could be anything that an LLM would interpret).
 
