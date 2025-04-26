@@ -5,7 +5,7 @@ Host handles all LLM logic (prompt rendering + function parsing etc.).
 Host takes optional clients.
 """
 
-import re, json
+import json
 from Chain.message.message import Message
 from Chain.model.model import Model
 from Chain.prompt.prompt import Prompt
@@ -19,6 +19,7 @@ from uuid import uuid4  # for unique ID generation
 
 # For development, note that our Primitives are not actually used at all on client/host side.
 from MCPTool import MCPTool
+from MCPResource import MCPResource
 
 dir_path = Path(__file__).parent
 system_prompt_path = dir_path / "mcp_system_prompt.jinja2"
@@ -62,6 +63,7 @@ class Host:  # ineerit from Chat?
         buffer = ""
 
         for chunk in stream:
+            print(str(chunk.choices[0].delta.content), end="", flush=True)
             # print(chunk.choices[0].delta.content.strip())
             buffer += str(chunk.choices[0].delta.content)
 
@@ -73,6 +75,7 @@ class Host:  # ineerit from Chat?
                 for json_str in json_objects:
                     try:
                         json_data = json.loads(json_str)
+                        breakpoint()
 
                         # Use a separate validation function
                         mcpmessage = parse_message(json_data)
@@ -181,7 +184,14 @@ class Host:  # ineerit from Chat?
 
 
 if __name__ == "__main__":
+    # Dummy resource function
+    def name_of_sheepadoodle() -> str:
+        """
+        Returns the name of the sheepadoodle.
+        """
+        return "Otis"
 
+    # Dummy tool function
     def add(a: int, b: int) -> int:
         """
         Add two numbers.
@@ -189,12 +199,19 @@ if __name__ == "__main__":
         return a + b
 
     # The objects that will be working together
+    resource = MCPResource(
+        function=name_of_sheepadoodle,
+        uri="names://sheepadoodle",
+    )
+    resource_definition = resource.definition
     tool = MCPTool(function=add)
     tool_definition = tool.definition
     host = Host(model=Model("gpt"))
     host.registry.tools.append(tool_definition)
+    host.registry.resources.append(resource_definition)
     host.system_prompt = host.generate_system_prompt()
     print(host.system_prompt)
-    stuff = host.query("What is 2333 + 1266? Use the add function.")
+    # stuff = host.query("What is 2333 + 1266? Use the add function.")
+    stuff = host.query("What is the name of my cute sheepadoodle?")
     print(type(stuff))
     print(stuff)

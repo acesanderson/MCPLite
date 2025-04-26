@@ -4,7 +4,7 @@ JSONRPC request ids generated here.
 """
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Literal
 from uuid import uuid4
 import json
 
@@ -75,10 +75,13 @@ class ResourceTemplateDefinition(MCPMessage):
 
 
 class ResourceRequest(MCPMessage):
+    class ResourceParams(BaseModel):
+        uri: str
+
     jsonrpc: str
     id: int | str
-    method: str
-    params: dict
+    method: Literal["resources/read"]
+    params: ResourceParams
 
 
 class ResourceResponse(MCPMessage):
@@ -95,7 +98,7 @@ class ToolRequest(MCPMessage):
 
     jsonrpc: str
     id: int | str
-    method: str
+    method: Literal["tools/call"]
     params: ToolParams
 
 
@@ -142,7 +145,6 @@ def parse_message(json_dict: dict) -> Optional[MCPMessage]:
     """
     Takes an arbitary JSON string; if it matches the schema of the MCPMessage classes, return the object.
     """
-    breakpoint()
     # Add jsonrpc and a uuid to the json_dict if they are not present
     if "jsonrpc" not in json_dict:
         json_dict["jsonrpc"] = "2.0"
