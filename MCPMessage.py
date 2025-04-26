@@ -1,9 +1,12 @@
 """
 Our message objects, keyed to MCP schema.
+JSONRPC request ids generated here.
 """
 
 from pydantic import BaseModel
 from typing import Optional
+from uuid import uuid4
+import json
 
 
 class MCPMessage(BaseModel):
@@ -28,7 +31,7 @@ class PromptRequest(MCPMessage):
         arguments: dict
 
     jsonrpc: str
-    id: int
+    id: int | str
     method: str
     params: Params
 
@@ -47,7 +50,7 @@ class PromptResponse(MCPMessage):
         messages: list[Message]
 
     jsonrpc: str
-    id: int
+    id: int | str
     result: Result
 
 
@@ -73,14 +76,14 @@ class ResourceTemplateDefinition(MCPMessage):
 
 class ResourceRequest(MCPMessage):
     jsonrpc: str
-    id: int
+    id: int | str
     method: str
     params: dict
 
 
 class ResourceResponse(MCPMessage):
     jsonrpc: str
-    id: int
+    id: int | str
     result: dict
 
 
@@ -91,7 +94,7 @@ class ToolRequest(MCPMessage):
         arguments: dict
 
     jsonrpc: str
-    id: int
+    id: int | str
     method: str
     params: ToolParams
 
@@ -101,7 +104,7 @@ class ToolResponse(MCPMessage):
         content: list[dict]
 
     jsonrpc: str
-    id: int
+    id: int | str
     result: Result
 
 
@@ -128,12 +131,25 @@ MCPMessages = [
     ToolDefinition,
 ]
 
+MCPRequests = [
+    PromptRequest,
+    ResourceRequest,
+    ToolRequest,
+]
 
-def parse_message(json_str: str) -> Optional[MCPMessage]:
+
+def parse_message(json_dict: dict) -> Optional[MCPMessage]:
     """
     Takes an arbitary JSON string; if it matches the schema of the MCPMessage classes, return the object.
     """
-    for message in MCPMessages:
+    breakpoint()
+    # Add jsonrpc and a uuid to the json_dict if they are not present
+    if "jsonrpc" not in json_dict:
+        json_dict["jsonrpc"] = "2.0"
+    if "id" not in json_dict:
+        json_dict["id"] = uuid4().hex
+    json_str = json.dumps(json_dict)
+    for message in MCPRequests:
         try:
             return message.model_validate_json(json_str)
         except Exception:

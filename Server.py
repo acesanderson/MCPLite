@@ -3,12 +3,12 @@ See notes in mcplite.py to see the distinction between Server and MCPLite classe
 This should mirror the Client class.
 """
 
-from Chain.mcp.MCPRegistry import Registry
+from MCPRegistry import ServerRegistry
 
 
 class Server:
     def __init__(self):
-        self.registry = Registry()
+        self.registry = ServerRegistry()
 
     def initialize(self, json: str):
         """

@@ -1,6 +1,6 @@
-from Chain.mcp.MCPMessage import MCPMessage
-from Chain.mcp.Server import Server
-from Chain.mcp.MCPRegistry import Registry
+from MCPMessage import MCPMessage
+from Server import Server
+from MCPRegistry import ClientRegistry
 
 # from Chain.mcp.Transport import ClientTransport
 from typing import Optional
@@ -10,7 +10,7 @@ import json
 class Client:
     def __init__(self, server: Server):
         self.server: Server = Server()
-        self.registry = Registry()
+        self.registry = ClientRegistry()
         # self.transport = ----- we can use DirectClientTransport as a dummy transport.
 
     def initialize(self):
@@ -34,7 +34,7 @@ class Client:
         json_str = request.model_dump_json()
         # Send to the server.
         # If the server responds, parse the response and return it to the client as pydantic object.
-        server_response_in_json = server.return_answer(json_str)
+        server_response_in_json = self.server.return_answer(json_str)
         # Convert to pydantic object.
         server_response_dict = json.loads(server_response_in_json)
         server_response_pydantic = ToolResponse(**server_response_dict)
