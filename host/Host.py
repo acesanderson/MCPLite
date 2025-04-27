@@ -27,10 +27,10 @@ system_prompt_path = dir_path / "prompts" / "mcp_system_prompt.jinja2"
 class Host:  # ineerit from Chat?
     def __init__(
         self,
-        model: Model = Model("gpt"),
+        model: str = "gpt",
     ):
         self.registry = ClientRegistry()  # This sums up all clients' registries.
-        self.model = model
+        self.model = Model(model)
         # self.system_prompt is generated when a client is added.
         self.system_prompt: str = ""
         self.message_store = MessageStore()

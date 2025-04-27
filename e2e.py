@@ -1,9 +1,15 @@
 from MCPLite.mcplite.mcplite import MCPLite
+from MCPLite.transport.Transport import Transport, DirectTransport
+from MCPLite.server.Server import Server
+from MCPLite.host.Host import Host
+from MCPLite.client.Client import Client
+
 
 mcp = MCPLite()
 
 
 # Dummy resource function
+@mcp.resource(uri="names://sheepadoodle")
 def name_of_sheepadoodle() -> str:
     """
     Returns the name of the sheepadoodle.
@@ -12,6 +18,7 @@ def name_of_sheepadoodle() -> str:
 
 
 # Dummy tool function
+@mcp.tool
 def add(a: int, b: int) -> int:
     """
     Add two numbers.
@@ -19,23 +26,12 @@ def add(a: int, b: int) -> int:
     return a + b
 
 
-# The objects that will be working together
-resource = MCPResource(
-    function=name_of_sheepadoodle,
-    uri="names://sheepadoodle",
-)
-resource_definition = resource.definition
-tool = MCPTool(function=add)
-tool_definition = tool.definition
-host = Host(model=Model("gpt"))
-host.registry.tools.append(tool_definition)
-host.registry.resources.append(resource_definition)
-host.system_prompt = host.generate_system_prompt()
-print(host.system_prompt)
-server = Server()
-client = Client(transport=DirectTransport(server.process_message))
-host.add_client(client)
-stuff = host.query("What is 2333 + 1266? Use the add function.")
-# stuff = host.query("What is the name of my cute sheepadoodle?")
-# print(type(stuff))
-# print(stuff)
+if __name__ == "__main__":
+    host = Host(model="gpt")
+    server = Server(registry=mcp.registry)
+    client = Client(transport=DirectTransport(server.process_message))
+    host.add_client(client)
+    stuff = host.query("What is 2333 + 1266? Use the add function.")
+    # stuff = host.query("What is the name of my cute sheepadoodle?")
+    # print(type(stuff))
+    # print(stuff)

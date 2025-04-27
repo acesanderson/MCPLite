@@ -10,8 +10,9 @@ First of functions to implement:
 """
 
 from MCPLite.messages import *
+from MCPLite.messages.init.ServerInit import Implementation, ServerCapabilities
 from MCPLite.primitives import ServerRegistry, MCPTool
-from pydantic import ValidationError, BaseModel
+from pydantic import ValidationError
 
 
 def convert_jsonrpc(
@@ -41,7 +42,7 @@ class Route:
     def __init__(self, registry: ServerRegistry):
         self.registry = registry
 
-    def __call__(self, request: MCPRequest) -> MCPMessage:
+    def __call__(self, request: JSONRPCRequest) -> MCPMessage:
         """
         Call the appropriate route based on the request method.
         Args:
@@ -56,7 +57,32 @@ class Route:
             raise ValueError(f"Invalid method: {request.method}")
 
     def initialize(self, request: InitializeRequest) -> InitializeResult:
-        pass
+        """
+        Client may have something interesting to tell the server, but for now we just treat this is a ping.
+        """
+        # Build the initialize result
+        server_info = Implementation(name="MyMinimalServer", version="0.1.0")
+
+        # Create minimal capabilities (empty object)
+        capabilities = ServerCapabilities(
+            prompts={
+                "listChanged": False  # Server supports notifications for prompt list changes
+            },
+            resources={
+                "listChanged": False,  # Server supports notifications for resource list changes
+                "subscribe": False,  # Server supports subscribing to resource updates
+            },
+            tools={
+                "listChanged": False  # Server doesn't support notifications for tool list changes
+            },
+        )
+        # Create the full result
+        result = InitializeResult(
+            capabilities=capabilities, protocolVersion="1.0.0", serverInfo=server_info
+        )
+
+        # Return the result as a JSON string
+        return result
 
     def logging_setLevel(self, request) -> None:
         pass

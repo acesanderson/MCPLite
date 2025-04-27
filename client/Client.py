@@ -1,30 +1,43 @@
 from MCPLite.messages.Requests import MCPRequest
+from MCPLite.messages import InitializeRequest, InitializeResult
+from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport.Transport import Transport, DirectTransport
 from MCPLite.server.Server import Server
 
 # from Chain.mcp.Transport import ClientTransport
-from typing import Optional
-import json
+from typing import Optional, Callable
 
 
 class Client:
-    def __init__(self, transport: Transport):
+    def __init__(
+        self,
+        transport: str = "DirectTransport",
+        server_function: Optional[Callable] = None,
+    ):
+        """
+        Initialize the client.
+        """
         self.registry = ClientRegistry()
         self.transport = transport
-        # self.transport = ----- we can use DirectClientTransport as a dummy transport.
+        self.server_function = server_function
+        # Currently, the only transport is DirectTransport.
+        if self.transport == "DirectTransport" and server_function is None:
+            raise ValueError(
+                "DirectTransport requires a server_function to be provided."
+            )
+        if self.transport == "DirectTransport":
+            self.transport = DirectTransport(self.server_function)
 
     def initialize(self):
         """
         Initialize the client.
         """
-        # Validate that we've received JSON, and that the JSON matches the MCP schema for list_definitions.
-        # Create tool, resource, prompt objects from the JSON received from the server.
-        # Add the tools, resources, prompts to the registry.
-        # self.registry = (
-        #     self.server.registry
-        # )  # purpose: this mocks network calll; we call this 'DirectClientTransport'
-        pass
+        # Send the InitializeRequest to the server, receive the InitializeResponse, and update the registry.
+        initialize_request: InitializeRequest = minimal_client_initialization()
+        initialize_result: InitializeResult = self.transport.send_json(
+            initialize_request.model_dump_json()
+        )
 
     def send_request(self, request: MCPRequest) -> Optional[MCPRequest]:
         """
