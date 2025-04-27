@@ -1,7 +1,7 @@
-from MCPPrompt import MCPPrompt
-from MCPResource import MCPResource
-from MCPTool import MCPTool
-from MCPRegistry import ClientRegistry, ServerRegistry
+from MCPLite.primitives.MCPPrompt import MCPPrompt
+from MCPLite.primitives.MCPResource import MCPResource
+from MCPLite.primitives.MCPTool import MCPTool
+from MCPLite.primitives.MCPRegistry import ClientRegistry, ServerRegistry
 
 __all__ = [
     "MCPTool",

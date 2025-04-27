@@ -1,5 +1,6 @@
 from typing import Dict, Any, Optional
 from MCPLite.messages.Notifications import MCPNotification
+from pydantic import Field
 
 
 class InitializedNotification(MCPNotification):

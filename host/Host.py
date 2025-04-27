@@ -7,21 +7,19 @@ Host takes optional clients.
 
 import json
 from Chain import Message, Model, Prompt, MessageStore
-from MCPLite.messages.MCPMessage import MCPMessage
-from MCPLite.messages.Requests import parse_request
-from MCPLite.primitives.MCPRegistry import ClientRegistry
+from MCPLite.messages import MCPMessage, MCPResponse, parse_request
+from MCPLite.primitives import ClientRegistry, ServerRegistry
 from MCPLite.transport.Transport import DirectTransport
 from MCPLite.server.Server import Server
-from Client import Client
+from MCPLite.client.Client import Client
 from pathlib import Path
 from typing import Optional
 
 # For development, note that our Primitives are not actually used at all on client/host side.
-from MCPLite.primitives.MCPTool import MCPTool
-from MCPLite.primitives.MCPResource import MCPResource
+from MCPLite.primitives import MCPTool, MCPResource
 
 dir_path = Path(__file__).parent
-system_prompt_path = dir_path / "prompts" / "mcp_system_prompt.jinja2"
+system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
 
 
 class Host:  # ineerit from Chat?
@@ -58,7 +56,7 @@ class Host:  # ineerit from Chat?
         rendered = system_prompt.render(input_variables)
         return rendered
 
-    def process_stream(self, stream) -> tuple[str, dict, str]:
+    def process_stream(self, stream) -> tuple[str, MCPMessage | None]:
         buffer = ""
 
         for chunk in stream:
@@ -80,16 +78,14 @@ class Host:  # ineerit from Chat?
 
                         if mcpmessage:
                             print("Valid MCP message found:", mcpmessage)
-                            self.process_message(mcpmessage)
-                            # If validation passes, stop the stream and return the data
                             stream.close()
-                            return
+                            return buffer, mcpmessage
 
                     except json.JSONDecodeError:
                         continue
 
         # If we processed the entire stream without finding valid JSON
-        return "", {}, buffer
+        return buffer, None
 
     def find_json_objects(self, text):
         """
@@ -152,18 +148,12 @@ class Host:  # ineerit from Chat?
         Process the message received from the stream.
         This sends message to the appropriate client, and returns the response as a string to LLM.
         """
+        if not self.clients:
+            raise ValueError("No clients available to process the message.")
         print("Processing message:", message)
-        self.clients[0].send_request(message)
+        response = self.clients[0].send_request(message)
+        response_string = response.model_dump_json(indent=2)
         exit()
-        # if not self.clients:
-        # raise ValueError("No clients available to process the message.")
-        # Assuming we have a single client for simplicity
-        # client = self.clients[0]
-        # Send the message to the client
-        # response = client.send_request(message)
-        # Process the response from the client
-        # response_string = response.model_dump_json(indent=2)
-        # Feed it to the LLM somehow
 
     def return_observation(self, observation: str) -> Message:
         observation_string = f"<observation>{observation}</observation>"
@@ -179,7 +169,16 @@ class Host:  # ineerit from Chat?
         while True:
             # Query OpenAI with the messages so far
             stream = self.model.stream(self.message_store.messages, verbose=False)
-            self.process_stream(stream)
+            # Get the response and any mcpmessage
+            buffer, mcpmessage = self.process_stream(stream)
+            if buffer and not mcpmessage:
+                # If we have a buffer but no mcpmessage, we can just return the buffer.
+                self.message_store.add_new(role="assistant", content=buffer)
+                break
+            if mcpmessage:
+                self.message_store.add_new(role="assistant", content=buffer)
+                # Process the message
+                observation: MCPResponse = self.process_message(mcpmessage)
 
 
 if __name__ == "__main__":
@@ -205,12 +204,14 @@ if __name__ == "__main__":
     resource_definition = resource.definition
     tool = MCPTool(function=add)
     tool_definition = tool.definition
-    host = Host(model=Model("gpt"))
+    host = Host(model="gpt")
     host.registry.tools.append(tool_definition)
     host.registry.resources.append(resource_definition)
     host.system_prompt = host.generate_system_prompt()
     print(host.system_prompt)
-    server = Server()
+    server = Server(registry=ServerRegistry())
+    server.registry.tools.append(tool)
+    server.registry.resources.append(resource)
     client = Client(transport=DirectTransport(server.process_message))
     host.add_client(client)
     stuff = host.query("What is 2333 + 1266? Use the add function.")

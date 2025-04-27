@@ -1,5 +1,6 @@
 from typing import Callable
 from abc import ABC, abstractmethod
+from pydantic import Json
 
 
 class Transport(ABC):
@@ -18,9 +19,9 @@ class DirectTransport(Transport):
     def __init__(self, server_function: Callable):
         self.server_function = server_function
 
-    def send_json(self, json_string: str):
+    def send_json(self, json_string: str) -> Json:
         # Directly send the JSON string
-        self.server_function(json_string)
+        json_response = self.server_function(json_string)
 
 
 # class ClientTransport(BaseTransport):

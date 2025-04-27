@@ -1,5 +1,11 @@
 from MCPLite.messages.Requests import MCPRequest
-from MCPLite.messages import InitializeRequest, InitializeResult
+from MCPLite.messages import (
+    InitializeRequest,
+    InitializeResult,
+    ListPromptsRequest,
+    ListToolsRequest,
+    ListResourcesRequest,
+)
 from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport.Transport import Transport, DirectTransport
@@ -38,6 +44,16 @@ class Client:
         initialize_result: InitializeResult = self.transport.send_json(
             initialize_request.model_dump_json()
         )
+        capabilities = initialize_result.capabilities
+        if capabilities.prompts:
+            prompts = self.send_request(ListPromptsRequest())
+            self.registry.prompts = prompts
+        if capabilities.resources:
+            resources = self.send_request(ListResourcesRequest())
+            self.registry.resources = resources
+        if capabilities.tools:
+            tools = self.send_request(ListToolsRequest())
+            self.registry.tools = tools
 
     def send_request(self, request: MCPRequest) -> Optional[MCPRequest]:
         """
@@ -47,7 +63,7 @@ class Client:
         # Convert to JSON.
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
-        self.transport.send_json(json_str)
+        json_response = self.transport.send_json(json_str)
 
 
 if __name__ == "__main__":

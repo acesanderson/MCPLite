@@ -32,6 +32,3 @@ if __name__ == "__main__":
     client = Client(transport=DirectTransport(server.process_message))
     host.add_client(client)
     stuff = host.query("What is 2333 + 1266? Use the add function.")
-    # stuff = host.query("What is the name of my cute sheepadoodle?")
-    # print(type(stuff))
-    # print(stuff)

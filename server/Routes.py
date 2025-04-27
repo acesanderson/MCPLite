@@ -162,7 +162,7 @@ class Route:
                     result=tool_response,
                 )
 
-    def tools_list(self, request: ListToolsRequest) -> ListToolsResponse:
+    def tools_list(self, request: ListToolsRequest) -> ListToolsResult:
         pass
 
     routes = {

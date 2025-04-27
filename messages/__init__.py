@@ -1,5 +1,5 @@
-from MCPMessage import MCPMessage
-from Requests import (
+from MCPLite.messages.MCPMessage import MCPMessage
+from MCPLite.messages.Requests import (
     MCPRequest,
     JSONRPCRequest,
     PromptRequest,
@@ -8,8 +8,9 @@ from Requests import (
     ListResourcesRequest,
     ListPromptsRequest,
     ListToolsRequest,
+    parse_request,
 )
-from Responses import (
+from MCPLite.messages.Responses import (
     MCPResponse,
     JSONRPCResponse,
     PromptResponse,
@@ -19,9 +20,9 @@ from Responses import (
     ListPromptsResult,
     ListToolsResult,
 )
-from init.ClientInit import InitializeRequest
-from init.Initialized import InitializedNotification
-from init.ServerInit import InitializeResult
+from MCPLite.messages.init.ClientInit import InitializeRequest
+from MCPLite.messages.init.Initialized import InitializedNotification
+from MCPLite.messages.init.ServerInit import InitializeResult
 
 __all__ = [
     "MCPMessage",
@@ -44,4 +45,5 @@ __all__ = [
     "InitializeRequest",
     "InitializedNotification",
     "InitializeResult",
+    "parse_request",
 ]
