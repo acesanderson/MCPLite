@@ -12,113 +12,124 @@ from pydantic import BaseModel, Field
 from typing import Literal, Any, Optional, Union
 from uuid import uuid4
 
-
-# JSON-RPC 2.0 response
-class JSONRPCResponse(BaseModel):
-    jsonrpc: Literal["2.0"] = "2.0"
-    id: int | str
-    result: Any | None = None
+from typing import Dict, List, Optional, Union, Any, Literal
+from pydantic import BaseModel, Field
 
 
-# Base class for all MCP responses
-class MCPResponse(MCPMessage):
-    result: BaseModel | dict | None = None
-
-    def to_json_rpc(self) -> JSONRPCResponse:
-        return JSONRPCResponse(
-            jsonrpc="2.0",
-            id=uuid4().hex,
-            result=self.result,
-        )
-
-
-# Prompt
-class PromptResponse(MCPResponse):
-    class Result(BaseModel):
-        class Message(BaseModel):
-            class Content(BaseModel):
-                type: str
-                text: str
-
-            role: str
-            content: Content
-
-        description: str
-        messages: list[Message]
-
-    result: Result
-
-
-# Resource
-class ResourceResponse(MCPResponse):
-    result: dict
-
-
-# Tool
-class ToolResponse(MCPResponse):
-    class Result(BaseModel):
-        content: list[dict]
-
-    result: Result
-
-
-# List results
-class ListPromptsResult(MCPResponse):
+class Result(BaseModel):
     """
-    TBD: This isn't right; need hierarchy of classes to be correct (this is not an MCPResponse, this is the result that should be assigned to an MCPResponse).
+    Base result for all MCP responses.
+    """
+
+    _meta: Optional[Dict[str, Any]] = Field(
+        None,
+        description="This field is reserved by the protocol to allow clients and servers to attach additional metadata",
+    )
+
+
+# Our wrapper class for all Responses.
+class JSONRPCResponse(MCPMessage):
+    """
+    A successful (non-error) response to a request.
+    """
+
+    id: Union[str, int]
+    jsonrpc: Literal["2.0"] = "2.0"
+    result: Result
+
+
+# Prompts
+class Role(str, Enum):
+    """Roles in the MCP ecosystem."""
+
+    USER = "user"
+    ASSISTANT = "assistant"
+    SYSTEM = "system"
+
+
+class ListPromptsResult(Result):
+    """
     The server's response to a prompts/list request from the client.
     """
 
-    prompts: list[PromptDefinition]
+    prompts: List[PromptDefinition]
     nextCursor: Optional[str] = Field(
-        default=None,
-        description="An opaque token representing the pagination position after the last returned result.",
-    )
-    meta: Optional[dict[str, Any]] = Field(
-        default=None,
-        description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
-        alias="_meta",
+        None,
+        description="An opaque token representing the pagination position after the last returned result",
     )
 
 
-class ListResourcesResult(MCPResponse):
+class PromptMessage(BaseModel):
     """
-    The server's response to a resources/list request from the client.
+    A message in a prompt, with content and role.
     """
 
-    resources: list[ResourceDefinition]
-    nextCursor: Optional[str] = Field(
-        default=None,
-        description="An opaque token representing the pagination position after the last returned result.",
-    )
-    meta: Optional[dict[str, Any]] = Field(
-        default=None,
-        description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
-        alias="_meta",
-    )
+    role: Role
+    content: List[Union[TextContent, ImageContent, EmbeddedResource]]
 
 
-class ListToolsResult(MCPResponse):
+class GetPromptResult(Result):
     """
-    The server's response to a tools/list request from the client.
+    The server's response to a prompts/get request from the client.
     """
 
-    tools: list[ToolDefinition]
-    nextCursor: Optional[str] = Field(
-        default=None,
-        description="An opaque token representing the pagination position after the last returned result.",
-    )
-    meta: Optional[dict[str, Any]] = Field(
-        default=None,
-        description="This result property is reserved by the protocol to allow clients and servers to attach additional metadata to their responses.",
-        alias="_meta",
-    )
+    messages: List[Any]
+    description: Optional[str] = None
+
+
+# Resources
+class ListResourcesResult(Result):
+    """
+    The server's response to a resources/list request.
+    """
+
+    resources: List[ResourceDefinition]
+    nextCursor: Optional[str] = None
+
+
+class ReadResourceResult(Result):
+    """
+    The server's response to a resources/read request.
+    """
+
+    class ResourceContents(BaseModel):
+        """
+        The contents of a resource.
+        """
+
+        uri: str
+        contents: str
+
+    resource: ResourceContents
+
+
+# TBD: ResourceTemplate related stuff
+
+
+# Tools
+class ListToolsResult(Result):
+    """
+    The server's response to a tools/list request.
+    """
+
+    tools: List[ToolDefinition]
+    nextCursor: Optional[str] = None
+
+
+class CallToolResult(Result):
+    """
+    The server's response to a tool call.
+    """
+
+    content: list[str]
+    isError: Optional[bool] = False
 
 
 MCPResponses = [
-    PromptResponse,
-    ResourceResponse,
-    ToolResponse,
+    JSONRPCResponse,
+    CallToolResult,
+    GetPromptResult,
+    ReadResourceResult,
     ListPromptsResult,
     ListResourcesResult,
     ListToolsResult,

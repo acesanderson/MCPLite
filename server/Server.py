@@ -7,12 +7,11 @@ from pydantic import Json
 from typing import Optional
 from MCPLite.messages import (
     MCPMessage,
-    MCPRequest,
     JSONRPCRequest,
 )
 from MCPLite.primitives.MCPRegistry import ServerRegistry
 from MCPLite.transport.Transport import Transport
-from MCPLite.server.Routes import Route
+from MCPLite.routes.ServerRoutes import Route
 import json
 
 
