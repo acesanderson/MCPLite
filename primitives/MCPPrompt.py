@@ -1,3 +1,7 @@
+"""
+Note: main class needs to be refactored for pydantic
+"""
+
 from typing import Callable
 from inspect import signature
 from MCPLite.messages.Definitions import PromptDefinition
