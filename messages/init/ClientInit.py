@@ -6,7 +6,7 @@ Inherits from MCPRequest (and can be blessed to JSONRPCRequest).
 
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
-from MCPLite.messages.Requests import MCPRequest
+from MCPLite.messages.Requests import MCPRequest, Method
 
 
 class Implementation(BaseModel):
@@ -58,7 +58,7 @@ class InitializeRequest(MCPRequest):
     This request is sent from the client to the server when it first connects, asking it to begin initialization.
     """
 
-    method: str = "initialize"
+    method: Method = Method("initialize")
     params: InitializeRequestParams
 
 

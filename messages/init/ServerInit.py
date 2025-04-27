@@ -7,7 +7,7 @@ Default is yes for all.
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional
 from MCPLite.messages.init.ClientInit import Implementation
-from MCPLite.messages.Responses import MCPResponse
+from MCPLite.messages.Responses import MCPResult
 
 
 class ServerCapabilities(BaseModel):
@@ -37,7 +37,7 @@ class ServerCapabilities(BaseModel):
         extra = "allow"  # Allows additional properties beyond those explicitly defined
 
 
-class InitializeResult(MCPResponse):
+class InitializeResult(MCPResult):
     """
     After receiving an initialize request from the client, the server sends this response.
     """

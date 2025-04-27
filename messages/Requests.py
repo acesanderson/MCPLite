@@ -3,6 +3,7 @@ from typing import Literal, Optional, Dict, Any
 from MCPLite.messages.MCPMessage import MCPMessage
 from uuid import uuid4
 import json
+from enum import Enum
 
 
 class Method(RootModel):
@@ -60,69 +61,116 @@ class MCPRequest(MCPMessage):
         )
 
 
-class PromptRequest(MCPRequest):
-    class Params(BaseModel):
-        name: str
-        arguments: dict
+# Some base definitions
+class Role(str, Enum):
+    """Defines the role of a participant in a conversation."""
 
-    method: str = "prompts/get"
-    params: Params
-
-
-class ResourceRequest(MCPRequest):
-    class ResourceParams(BaseModel):
-        uri: str
-
-    method: str = "resources/read"
-    params: ResourceParams
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
 
 
-class ToolRequest(MCPRequest):
-    class ToolParams(BaseModel):
-        name: str
-        arguments: dict
+# Resources
+class ResourceReference(BaseModel):
+    """A reference to a resource."""
 
-    method: str = "tools/call"
-    params: ToolParams
+    uri: str
+
+
+class ListResourcesRequestParams(BaseModel):
+    """Parameters for listing resources."""
+
+    cursor: Optional[str] = None
 
 
 class ListResourcesRequest(MCPRequest):
-    """
-    Sent from the client to request a list of resources the server has.
-    """
+    """Sent from client to request a list of resources the server has."""
 
-    method: str = "resources/list"
-    params: Optional[Dict[str, Any]] = Field(
-        default_factory=dict, description="Optional parameters for the request"
-    )
+    method: Method = Method("resources/list")
+    params: Optional[ListResourcesRequestParams] = None
+
+
+class ReadResourceRequestParams(BaseModel):
+    """Parameters for reading a resource."""
+
+    uri: str
+
+
+class ReadResourceRequest(MCPRequest):
+    """Sent from client to request the contents of a resource."""
+
+    method: Method = Method("resources/read")
+    params: ReadResourceRequestParams
+
+
+# Prompts
+
+
+class PromptReference(BaseModel):
+    """A reference to a prompt."""
+
+    name: str
+
+
+class ListPromptsRequestParams(BaseModel):
+    """Parameters for listing prompts."""
+
+    cursor: Optional[str] = None
 
 
 class ListPromptsRequest(MCPRequest):
-    """
-    Sent from the client to request a list of prompts and prompt templates the server has.
-    """
+    """Sent from client to request a list of prompts and prompt templates."""
 
-    method: str = "prompts/list"
-    params: Optional[Dict[str, Any]] = Field(
-        default_factory=dict, description="Optional parameters for the request"
-    )
+    method: Method = Method("prompts/list")
+    params: Optional[ListPromptsRequestParams] = None
+
+
+class GetPromptRequestParams(BaseModel):
+    """Parameters for getting a prompt."""
+
+    name: str
+    arguments: Optional[Dict[str, str]] = None
+
+
+class GetPromptRequest(MCPRequest):
+    """Used by the client to get a prompt provided by the server."""
+
+    method: Method = Method("prompts/get")
+    params: GetPromptRequestParams
+
+
+# Tools
+class ListToolsRequestParams(BaseModel):
+    """Parameters for listing tools."""
+
+    cursor: Optional[str] = None
 
 
 class ListToolsRequest(MCPRequest):
-    """
-    Sent from the client to request a list of tools the server has.
-    """
+    """Sent from client to request a list of tools the server has."""
 
-    method: str = "tools/list"
-    params: Optional[Dict[str, Any]] = Field(
-        default_factory=dict, description="Optional parameters for the request"
-    )
+    method: Method = Method("tools/list")
+    params: Optional[ListToolsRequestParams] = None
+
+
+class CallToolRequestParams(BaseModel):
+    """Parameters for calling a tool."""
+
+    name: str
+    arguments: Optional[Dict[str, Any]] = None
+
+
+class CallToolRequest(MCPRequest):
+    """Used by the client to invoke a tool provided by the server."""
+
+    method: Method = Method("tools/call")
+    params: CallToolRequestParams
 
 
 MCPRequests = [
-    PromptRequest,
-    ResourceRequest,
-    ToolRequest,
+    CallToolRequest,
+    GetPromptRequest,
+    ReadResourceRequest,
     ListResourcesRequest,
     ListPromptsRequest,
     ListToolsRequest,
