@@ -8,20 +8,19 @@ from MCPLite.messages.Definitions import (
     PromptDefinition,
     ToolDefinition,
 )
-from MCPLite.primitives.MCPPrompt import MCPPrompt
-from MCPLite.primitives.MCPResource import MCPResource
-from MCPLite.primitives.MCPTool import MCPTool
 from pydantic import BaseModel, Field
 from typing import Literal, Any, Optional, Union
 from uuid import uuid4
 
 
+# JSON-RPC 2.0 response
 class JSONRPCResponse(BaseModel):
     jsonrpc: Literal["2.0"] = "2.0"
     id: int | str
     result: Any | None = None
 
 
+# Base class for all MCP responses
 class MCPResponse(MCPMessage):
     result: BaseModel | dict | None = None
 
@@ -69,7 +68,7 @@ class ListPromptsResult(MCPResponse):
     The server's response to a prompts/list request from the client.
     """
 
-    prompts: list[MCPPrompt]
+    prompts: list[PromptDefinition]
     nextCursor: Optional[str] = Field(
         default=None,
         description="An opaque token representing the pagination position after the last returned result.",
@@ -86,7 +85,7 @@ class ListResourcesResult(MCPResponse):
     The server's response to a resources/list request from the client.
     """
 
-    resources: list[MCPResource]
+    resources: list[ResourceDefinition]
     nextCursor: Optional[str] = Field(
         default=None,
         description="An opaque token representing the pagination position after the last returned result.",
@@ -103,7 +102,7 @@ class ListToolsResult(MCPResponse):
     The server's response to a tools/list request from the client.
     """
 
-    tools: list[MCPTool]
+    tools: list[ToolDefinition]
     nextCursor: Optional[str] = Field(
         default=None,
         description="An opaque token representing the pagination position after the last returned result.",

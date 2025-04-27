@@ -10,6 +10,8 @@ from Chain import Message, Model, Prompt, MessageStore
 from MCPLite.messages.MCPMessage import MCPMessage
 from MCPLite.messages.Requests import parse_request
 from MCPLite.primitives.MCPRegistry import ClientRegistry
+from MCPLite.transport.Transport import DirectTransport
+from MCPLite.server.Server import Server
 from Client import Client
 from pathlib import Path
 from typing import Optional
@@ -72,7 +74,6 @@ class Host:  # ineerit from Chat?
                 for json_str in json_objects:
                     try:
                         json_data = json.loads(json_str)
-                        breakpoint()
 
                         # Use a separate validation function
                         mcpmessage = parse_request(json_data)
@@ -152,6 +153,7 @@ class Host:  # ineerit from Chat?
         This sends message to the appropriate client, and returns the response as a string to LLM.
         """
         print("Processing message:", message)
+        self.clients[0].send_request(message)
         exit()
         # if not self.clients:
         # raise ValueError("No clients available to process the message.")
@@ -208,7 +210,10 @@ if __name__ == "__main__":
     host.registry.resources.append(resource_definition)
     host.system_prompt = host.generate_system_prompt()
     print(host.system_prompt)
-    # stuff = host.query("What is 2333 + 1266? Use the add function.")
-    stuff = host.query("What is the name of my cute sheepadoodle?")
-    print(type(stuff))
-    print(stuff)
+    server = Server()
+    client = Client(transport=DirectTransport(server.process_message))
+    host.add_client(client)
+    stuff = host.query("What is 2333 + 1266? Use the add function.")
+    # stuff = host.query("What is the name of my cute sheepadoodle?")
+    # print(type(stuff))
+    # print(stuff)
