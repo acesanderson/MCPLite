@@ -65,6 +65,7 @@ class ToolResponse(MCPResponse):
 # List results
 class ListPromptsResult(MCPResponse):
     """
+    TBD: This isn't right; need hierarchy of classes to be correct (this is not an MCPResponse, this is the result that should be assigned to an MCPResponse).
     The server's response to a prompts/list request from the client.
     """
 

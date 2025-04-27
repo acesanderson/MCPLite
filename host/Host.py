@@ -143,7 +143,7 @@ class Host:  # ineerit from Chat?
 
         return json_objects
 
-    def process_message(self, message: MCPMessage) -> MCPMessage | None:
+    def process_message(self, message: MCPMessage) -> MCPResponse | None:
         """
         Process the message received from the stream.
         This sends message to the appropriate client, and returns the response as a string to LLM.
@@ -152,8 +152,7 @@ class Host:  # ineerit from Chat?
             raise ValueError("No clients available to process the message.")
         print("Processing message:", message)
         response = self.clients[0].send_request(message)
-        response_string = response.model_dump_json(indent=2)
-        exit()
+        return response
 
     def return_observation(self, observation: str) -> Message:
         observation_string = f"<observation>{observation}</observation>"
@@ -176,6 +175,7 @@ class Host:  # ineerit from Chat?
                 self.message_store.add_new(role="assistant", content=buffer)
                 break
             if mcpmessage:
+                # If we have a mcpmessage, we need to process it and return the observation.
                 self.message_store.add_new(role="assistant", content=buffer)
                 # Process the message
                 observation: MCPResponse = self.process_message(mcpmessage)

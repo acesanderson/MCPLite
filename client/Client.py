@@ -5,14 +5,17 @@ from MCPLite.messages import (
     ListPromptsRequest,
     ListToolsRequest,
     ListResourcesRequest,
+    JSONRPCResponse,
 )
 from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport.Transport import Transport, DirectTransport
 from MCPLite.server.Server import Server
+from MCPLite.routes.ClientRoutes import ClientRoute
 
 # from Chain.mcp.Transport import ClientTransport
 from typing import Optional, Callable
+from pydantic import ValidationError
 
 
 class Client:
@@ -27,6 +30,7 @@ class Client:
         self.registry = ClientRegistry()
         self.transport = transport
         self.server_function = server_function
+        self.route = ClientRoute(self.registry)
         # Currently, the only transport is DirectTransport.
         if self.transport == "DirectTransport" and server_function is None:
             raise ValueError(
@@ -64,6 +68,12 @@ class Client:
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
         json_response = self.transport.send_json(json_str)
+        json_obj = json.loads(json_response)
+        try:
+            jsonrpc_response = JSONRPCResponse(**json_obj)
+        except ValueError as e:
+            raise ValueError(f"Invalid JSON-RPC response from server: {e}")
+        # Convert JSONRPCResponse to the appropriate MCPResponse.
 
 
 if __name__ == "__main__":

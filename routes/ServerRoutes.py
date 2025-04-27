@@ -15,7 +15,7 @@ from MCPLite.primitives import ServerRegistry, MCPTool
 from pydantic import ValidationError
 
 
-def convert_jsonrpc(
+def convert_jsonrpc_request(
     request: JSONRPCRequest,
     pydantic_model,
 ) -> tuple[str, MCPRequest]:
@@ -37,7 +37,7 @@ def convert_jsonrpc(
     return id, mcprequest
 
 
-class Route:
+class ServerRoute:
 
     def __init__(self, registry: ServerRegistry):
         self.registry = registry
@@ -110,7 +110,7 @@ class Route:
         TBD: MATCH ON URI, NOT NAME
         """
         # Strip the request of the JSONRPC and ID fields, then validate the remainder.
-        id, request = convert_jsonrpc(request, ResourceRequest)
+        id, request = convert_jsonrpc_request(request, ResourceRequest)
 
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
