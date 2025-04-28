@@ -90,7 +90,7 @@ class ServerRoute:
     def ping(self, request) -> None:
         pass
 
-    def prompts_get(self, request: PromptRequest) -> PromptRequest:
+    def prompts_get(self, request: GetPromptRequest) -> GetPromptResult:
         pass
 
     def prompts_list(self, request: ListPromptsRequest) -> ListPromptsResult:
@@ -99,7 +99,7 @@ class ServerRoute:
     def resources_list(self, request: ListResourcesRequest) -> ListResourcesResult:
         pass
 
-    def resources_read(self, request: JSONRPCRequest) -> tuple[str, ResourceResponse]:
+    def resources_read(self, request: JSONRPCRequest) -> tuple[str, ReadResourceResult]:
         """
         Read a resource from the registry.
         Args:
@@ -110,7 +110,7 @@ class ServerRoute:
         TBD: MATCH ON URI, NOT NAME
         """
         # Strip the request of the JSONRPC and ID fields, then validate the remainder.
-        id, request = convert_jsonrpc_request(request, ResourceRequest)
+        id, request = convert_jsonrpc_request(request, ReadResourceRequest)
 
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
@@ -140,7 +140,7 @@ class ServerRoute:
     def sampling_createMessage(self, request) -> None:
         pass
 
-    def tools_call(self, request: JSONRPCRequest) -> tuple[str, ToolResponse]:
+    def tools_call(self, request: JSONRPCRequest) -> tuple[str, CallToolResult]:
         """
         Call a tool from the registry.
         Args:
@@ -149,7 +149,7 @@ class ServerRoute:
             tuple[str, ToolResponse]: The ID and the tool response.
         """
         # Strip the request of the JSONRPC and ID fields, then validate the remainder.
-        id, request = convert_jsonrpc(request, ToolRequest)
+        id, request = convert_jsonrpc(request, CallToolRequest)
 
         if len(self.registry.tools) == 0:
             raise ValueError("No tools found in registry.")
@@ -158,7 +158,7 @@ class ServerRoute:
         for tool in self.registry.tools:
             if tool.name == request.params.name:
                 tool_response = tool(**request.params.arguments)
-                return id, ToolResponse(
+                return id, CallToolResult(
                     result=tool_response,
                 )
 

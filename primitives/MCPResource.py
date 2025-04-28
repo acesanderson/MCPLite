@@ -1,9 +1,7 @@
 from typing import Callable
 import json
 import re
-from MCPLite.messages.Definitions import ResourceDefinition, ResourceTemplateDefinition
-from MCPLite.messages.Requests import ResourceRequest
-from MCPLite.messages.Responses import ResourceResponse
+from MCPLite.messages.Definitions import ResourceDefinition
 from pydantic import BaseModel, Field
 
 uri_regex = r"^[a-zA-Z][a-zA-Z\d+\-.]*://[^\s/$.?#].[^\s]*"

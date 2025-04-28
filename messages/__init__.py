@@ -11,6 +11,7 @@ from MCPLite.messages.Requests import (
     parse_request,
 )
 from MCPLite.messages.Responses import (
+    MCPResult,
     JSONRPCResponse,
     ListResourcesResult,
     ListPromptsResult,
@@ -33,6 +34,7 @@ __all__ = [
     "ListResourcesRequest",
     "ListPromptsRequest",
     "ListToolsRequest",
+    "MCPResult",
     "JSONRPCResponse",
     "CallToolResult",
     "GetPromptResult",

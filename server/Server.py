@@ -9,9 +9,9 @@ from MCPLite.messages import (
     MCPMessage,
     JSONRPCRequest,
 )
-from MCPLite.primitives.MCPRegistry import ServerRegistry
+from MCPLite.primitives import ServerRegistry
 from MCPLite.transport.Transport import Transport
-from MCPLite.routes.ServerRoutes import Route
+from MCPLite.routes.ServerRoutes import ServerRoute
 import json
 
 
@@ -20,7 +20,7 @@ class Server:
     def __init__(self, registry: ServerRegistry, transport: Optional[Transport] = None):
         self.registry = registry
         self.transport = transport
-        self.route = Route(self.registry)
+        self.route = ServerRoute(self.registry)
 
     def initialize(self, json_string: str):
         """

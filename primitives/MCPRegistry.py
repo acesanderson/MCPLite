@@ -1,16 +1,15 @@
 from pydantic import BaseModel
 from MCPLite.messages.MCPMessage import MCPMessage
-from MCPLite.messages.Requests import ResourceRequest, ToolRequest, PromptRequest
-from MCPLite.messages.Responses import ResourceResponse, ToolResponse, PromptResponse
+
+# ClientRegistry holds Definitions. These map to Resource, Tool, Prompt in the official MCP schema.
 from MCPLite.messages.Definitions import (
     ResourceDefinition,
-    ResourceTemplateDefinition,
     ToolDefinition,
     PromptDefinition,
 )
-from MCPLite.primitives.MCPTool import MCPTool
-from MCPLite.primitives.MCPResource import MCPResource
-from MCPLite.primitives.MCPPrompt import MCPPrompt
+
+# ServerRegistry holds MCPResource, MCPTool, and MCPPrompt. These are the actual implementations of the definitions.
+from MCPLite.primitives import MCPTool, MCPResource, MCPPrompt
 
 
 class ClientRegistry(BaseModel):
@@ -19,7 +18,7 @@ class ClientRegistry(BaseModel):
     Client side this means our MCPMessage objects, which map to MCP schema.
     """
 
-    resources: list[ResourceDefinition | ResourceTemplateDefinition] = []
+    resources: list[ResourceDefinition] = []
     tools: list[ToolDefinition] = []
     prompts: list[PromptDefinition] = []
 

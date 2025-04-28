@@ -39,15 +39,34 @@ class JSONRPCRequest(BaseModel):
     jsonrpc: Literal["2.0"] = "2.0"
     id: int | str
     method: Method
-    params: dict | None
+    params: BaseModel | dict | None
+
+    def from_json_rpc(
+        self,
+    ) -> Optional["MCPRequest"]:
+        """
+        Convert this response's result to the appropriate Result object.
+
+        Returns:
+            The appropriate Result subclass instance
+        """
+        json_rpc_dict = self.model_dump()
+        _ = json_rpc_dict.pop("jsonrpc")
+        _ = json_rpc_dict.pop("id")
+        mcprequest_dict = json_rpc_dict
+        if mcprequest_dict["method"] in method_map:
+            # Find the appropriate class based on the method, and create an instance
+            mcprequest_obj = method_map[mcprequest_dict["method"]](**mcprequest_dict)
+            return mcprequest_obj
+        else:
+            raise ValueError(
+                f"Method {mcprequest_dict['method']} not found in method_map. Is this in MCP schema?"
+            )
 
 
 class MCPRequest(MCPMessage):
     method: Method
-    params: Optional[BaseModel] = Field(
-        None,
-        description="The parameters for the request. This is a dictionary of key-value pairs.",
-    )
+    params: BaseModel | dict | None
 
     def to_jsonrpc(self) -> JSONRPCRequest:
         """
@@ -189,3 +208,22 @@ def parse_request(json_dict: dict) -> Optional[MCPMessage]:
         except Exception:
             continue
     return None
+
+
+method_map = {
+    "completion/complete": None,
+    "initialize": None,
+    "logging/setLevel": None,
+    "ping": None,
+    "prompts/get": GetPromptRequest,
+    "prompts/list": ListPromptsRequest,
+    "resources/list": ListResourcesRequest,
+    "resources/read": ReadResourceRequest,
+    "resources/subscribe": None,
+    "resources/templates/list": None,
+    "resources/unsubscribe": None,
+    "roots/list": None,
+    "sampling/createMessage": None,
+    "tools/call": CallToolRequest,
+    "tools/list": ListToolsRequest,
+}

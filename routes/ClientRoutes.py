@@ -9,9 +9,9 @@ from MCPLite.primitives import ClientRegistry
 from pydantic import ValidationError
 
 MCPResponses = [
-    PromptResponse,
-    ResourceResponse,
-    ToolResponse,
+    CallToolResult,
+    GetPromptResult,
+    ReadResourceResult,
     ListResourcesResult,
     ListPromptsResult,
     ListToolsResult,
@@ -21,7 +21,7 @@ MCPResponses = [
 
 def convert_jsonrpc_response(
     response: JSONRPCResponse,
-) -> tuple[str, MCPResponse] | None:
+) -> tuple[str, MCPResult] | None:
     """
     Convert the JSONRPC response to a tuple of (method, id, params).
     Mirrors the convert_jsonrpc function in Routes.py.
@@ -52,7 +52,7 @@ class ClientRoute:
     def __init__(self, registry: ClientRegistry):
         self.registry = registry
 
-    def __call__(self, response: JSONRPCResponse) -> MCPResponse:
+    def __call__(self, response: JSONRPCResponse) -> MCPResult:
         """
         Call the appropriate route based on the response type.
         Args:

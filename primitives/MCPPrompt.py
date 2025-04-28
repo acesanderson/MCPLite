@@ -5,8 +5,6 @@ Note: main class needs to be refactored for pydantic
 from typing import Callable
 from inspect import signature
 from MCPLite.messages.Definitions import PromptDefinition
-from MCPLite.messages.Responses import PromptResponse
-from MCPLite.messages.Requests import PromptRequest
 import json
 from pydantic import BaseModel
 

@@ -2,8 +2,6 @@ from typing import Callable
 from inspect import signature
 import json
 from MCPLite.messages.Definitions import ToolDefinition
-from MCPLite.messages.Requests import ToolRequest
-from MCPLite.messages.Responses import ToolResponse
 from pydantic import BaseModel, Field
 
 

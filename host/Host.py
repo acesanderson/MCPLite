@@ -7,7 +7,7 @@ Host takes optional clients.
 
 import json
 from Chain import Message, Model, Prompt, MessageStore
-from MCPLite.messages import MCPMessage, MCPResponse, parse_request
+from MCPLite.messages import MCPMessage, MCPResult, parse_request
 from MCPLite.primitives import ClientRegistry, ServerRegistry
 from MCPLite.transport.Transport import DirectTransport
 from MCPLite.server.Server import Server
@@ -143,7 +143,7 @@ class Host:  # ineerit from Chat?
 
         return json_objects
 
-    def process_message(self, message: MCPMessage) -> MCPResponse | None:
+    def process_message(self, message: MCPMessage) -> MCPResult | None:
         """
         Process the message received from the stream.
         This sends message to the appropriate client, and returns the response as a string to LLM.
@@ -178,7 +178,7 @@ class Host:  # ineerit from Chat?
                 # If we have a mcpmessage, we need to process it and return the observation.
                 self.message_store.add_new(role="assistant", content=buffer)
                 # Process the message
-                observation: MCPResponse = self.process_message(mcpmessage)
+                observation: MCPResult = self.process_message(mcpmessage)
 
 
 if __name__ == "__main__":
