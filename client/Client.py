@@ -9,13 +9,10 @@ from MCPLite.messages import (
 )
 from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
-from MCPLite.transport.Transport import Transport, DirectTransport
-from MCPLite.server.Server import Server
+from MCPLite.transport.Transport import DirectTransport
 from MCPLite.routes.ClientRoutes import ClientRoute
-
-# from Chain.mcp.Transport import ClientTransport
+import json
 from typing import Optional, Callable
-from pydantic import ValidationError
 
 
 class Client:
@@ -74,8 +71,3 @@ class Client:
         except ValueError as e:
             raise ValueError(f"Invalid JSON-RPC response from server: {e}")
         # Convert JSONRPCResponse to the appropriate MCPResponse.
-
-
-if __name__ == "__main__":
-    server = Server()
-    transport = DirectTransport(server.process_message)

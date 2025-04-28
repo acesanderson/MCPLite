@@ -148,6 +148,7 @@ class Host:  # ineerit from Chat?
         Process the message received from the stream.
         This sends message to the appropriate client, and returns the response as a string to LLM.
         """
+        breakpoint()
         if not self.clients:
             raise ValueError("No clients available to process the message.")
         print("Processing message:", message)

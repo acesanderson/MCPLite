@@ -43,7 +43,7 @@ class JSONRPCRequest(BaseModel):
 
     def from_json_rpc(
         self,
-    ) -> Optional["MCPRequest"]:
+    ) -> "MCPRequest":
         """
         Convert this response's result to the appropriate Result object.
 

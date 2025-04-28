@@ -7,6 +7,7 @@ from pydantic import Json
 from typing import Optional
 from MCPLite.messages import (
     MCPMessage,
+    MCPRequest,
     JSONRPCRequest,
 )
 from MCPLite.primitives import ServerRegistry
@@ -49,10 +50,11 @@ class Server:
                 )
             # Process the request.
             json_rpc_request = JSONRPCRequest(**json_obj)
-            response = self.route_request(json_rpc_request)
+            mcp_request = json_rpc_request.from_json_rpc()
+            response = self.route_request(mcp_request)
             return response.model_dump_json()
 
-    def route_request(self, request: JSONRPCRequest) -> MCPMessage:
+    def route_request(self, request: MCPRequest) -> MCPMessage:
         """
         Route the request to the appropriate handler.
         """

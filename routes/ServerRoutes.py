@@ -15,34 +15,12 @@ from MCPLite.primitives import ServerRegistry, MCPTool
 from pydantic import ValidationError
 
 
-def convert_jsonrpc_request(
-    request: JSONRPCRequest,
-    pydantic_model,
-) -> tuple[str, MCPRequest]:
-    """
-    Convert the JSONRPC request to a tuple of (method, id, params).
-
-    Args:
-        request: JSONRPCRequest: The JSONRPC request to convert.
-        pydantic_model: BaseModel: The Pydantic model to validate the request against.
-    """
-    # Strip the request of the JSONRPC and ID fields, then validate the remainder.
-    json_rpc_dict = request.model_dump()
-    _ = str(json_rpc_dict.pop("jsonrpc"))
-    id = str(json_rpc_dict.pop("id"))
-    try:
-        mcprequest = pydantic_model(**json_rpc_dict)
-    except ValidationError as e:
-        raise ValueError(f"Invalid MCPRequest: {e}")
-    return id, mcprequest
-
-
 class ServerRoute:
 
     def __init__(self, registry: ServerRegistry):
         self.registry = registry
 
-    def __call__(self, request: JSONRPCRequest) -> MCPMessage:
+    def __call__(self, request: MCPRequest) -> MCPMessage:
         """
         Call the appropriate route based on the request method.
         Args:
@@ -51,8 +29,8 @@ class ServerRoute:
             MCPMessage: The response to the request.
         """
         # Check if the request is a notification or a request.
-        if request.method in self.routes:
-            return self.routes[request.method](self, request)
+        if str(request.method.root) in self.routes:
+            return self.routes[str(request.method.root)](self, request)
         else:
             raise ValueError(f"Invalid method: {request.method}")
 
@@ -99,7 +77,7 @@ class ServerRoute:
     def resources_list(self, request: ListResourcesRequest) -> ListResourcesResult:
         pass
 
-    def resources_read(self, request: JSONRPCRequest) -> tuple[str, ReadResourceResult]:
+    def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult:
         """
         Read a resource from the registry.
         Args:
@@ -109,8 +87,6 @@ class ServerRoute:
 
         TBD: MATCH ON URI, NOT NAME
         """
-        # Strip the request of the JSONRPC and ID fields, then validate the remainder.
-        id, request = convert_jsonrpc_request(request, ReadResourceRequest)
 
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
@@ -140,27 +116,31 @@ class ServerRoute:
     def sampling_createMessage(self, request) -> None:
         pass
 
-    def tools_call(self, request: JSONRPCRequest) -> tuple[str, CallToolResult]:
+    def tools_call(self, request: CallToolRequest) -> CallToolResult:
         """
         Call a tool from the registry.
         Args:
-            request (JSONRPCRequest): The JSONRPC request to convert.
+            request (CallToolRequest): The JSONRPC request to convert.
         Returns:
-            tuple[str, ToolResponse]: The ID and the tool response.
+            tuple[str, CallToolResult]: The ID and the tool response.
         """
-        # Strip the request of the JSONRPC and ID fields, then validate the remainder.
-        id, request = convert_jsonrpc(request, CallToolRequest)
 
+        try:
+            tool_name = request.params.name
+        except AttributeError:
+            raise ValueError("Tool name not found in request parameters.")
         if len(self.registry.tools) == 0:
             raise ValueError("No tools found in registry.")
         if request.params.name not in [tool.name for tool in self.registry.tools]:
             raise ValueError(f"Tool {request.params.name} not found in registry.")
         for tool in self.registry.tools:
-            if tool.name == request.params.name:
-                tool_response = tool(**request.params.arguments)
-                return id, CallToolResult(
-                    result=tool_response,
+            if tool_name == request.params.name:
+                request_dict = request.model_dump()
+                tool_response = tool(**request_dict["params"])
+                return CallToolResult(
+                    content=tool_response,
                 )
+        raise ValueError(f"Tool {tool_name} not found in registry.")
 
     def tools_list(self, request: ListToolsRequest) -> ListToolsResult:
         pass
