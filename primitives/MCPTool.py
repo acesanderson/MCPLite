@@ -2,6 +2,7 @@ from typing import Callable
 from inspect import signature
 import json
 from MCPLite.messages.Definitions import ToolDefinition
+from MCPLite.messages.Responses import TextContent
 from pydantic import BaseModel, Field
 
 
@@ -62,8 +63,20 @@ class MCPTool(BaseModel):
             raise ValueError("Function parameters must have type annotations.")
         return input_schema
 
-    def __call__(self, **kwargs):
-        return self.function(**kwargs)
+    def __call__(self, **kwargs) -> TextContent:
+        """
+        Here we need to return the result of the function call, such that it can be inserted into CallRoolResult.
+        content: list[Union[TextContent, ImageContent, EmbeddedResource]]
+        TBD: implementation of ImageContent, EmbeddedResource
+        """
+        # Assume everything is TextContent for now.
+        result_content = str(self.function(**kwargs))
+        # Convert the result to a TextContent object
+        content = TextContent(
+            type="text",
+            text=result_content,
+        )
+        return content
 
     @property
     def definition(self) -> ToolDefinition:

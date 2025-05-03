@@ -20,6 +20,7 @@ from MCPLite.primitives import MCPTool, MCPResource
 
 dir_path = Path(__file__).parent
 system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
+message_store_log_path = dir_path / ".message_store_log"
 
 
 class Host:  # ineerit from Chat?
@@ -31,7 +32,7 @@ class Host:  # ineerit from Chat?
         self.model = Model(model)
         # self.system_prompt is generated when a client is added.
         self.system_prompt: str = ""
-        self.message_store = MessageStore()
+        self.message_store = MessageStore(log_file=message_store_log_path)
         self.clients: list[Optional[Client]] = []
 
     # Initialization functions
@@ -148,10 +149,9 @@ class Host:  # ineerit from Chat?
         Process the message received from the stream.
         This sends message to the appropriate client, and returns the response as a string to LLM.
         """
-        breakpoint()
         if not self.clients:
             raise ValueError("No clients available to process the message.")
-        print("Processing message:", message)
+        print("Sending request through Client:", message)
         response = self.clients[0].send_request(message)
         return response
 
@@ -179,7 +179,22 @@ class Host:  # ineerit from Chat?
                 # If we have a mcpmessage, we need to process it and return the observation.
                 self.message_store.add_new(role="assistant", content=buffer)
                 # Process the message
+                print("Processing MCP message:", mcpmessage)
                 observation: MCPResult = self.process_message(mcpmessage)
+                print(
+                    "Observation received, either None or valid MCPResult:", observation
+                )
+                if observation:
+                    print("OBSERVATION RECEIVED:", observation)
+                    # If we have an observation, we need to return it.
+                    # This is a bit of a hack, but we can just return the observation as a string.
+                    # In the future, we might want to return a more structured object.
+                    if isinstance(observation, MCPResult):
+                        print("Returning observation:", observation)
+                        self.message_store.add_new(
+                            role="assistant",
+                            content=observation.model_dump_json(indent=2),
+                        )
 
 
 if __name__ == "__main__":
@@ -215,6 +230,7 @@ if __name__ == "__main__":
     server.registry.resources.append(resource)
     client = Client(transport=DirectTransport(server.process_message))
     host.add_client(client)
+    print("Running host.query ...")
     stuff = host.query("What is 2333 + 1266? Use the add function.")
     # stuff = host.query("What is the name of my cute sheepadoodle?")
     # print(type(stuff))

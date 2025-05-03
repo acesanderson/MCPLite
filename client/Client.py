@@ -6,6 +6,7 @@ from MCPLite.messages import (
     ListToolsRequest,
     ListResourcesRequest,
     JSONRPCResponse,
+    MCPResult,
 )
 from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
@@ -56,7 +57,7 @@ class Client:
             tools = self.send_request(ListToolsRequest())
             self.registry.tools = tools
 
-    def send_request(self, request: MCPRequest) -> Optional[MCPRequest]:
+    def send_request(self, request: MCPRequest) -> MCPResult:
         """
         Send a request to the server.
         """
@@ -64,10 +65,21 @@ class Client:
         # Convert to JSON.
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
+        print("Client sending JSON-RPC request through transport")
         json_response = self.transport.send_json(json_str)
+        print(f"Client received JSON-RPC response from transport: {json_response}")
         json_obj = json.loads(json_response)
         try:
+            print(f"Client parsing JSON-RPC response: {json_obj}")
             jsonrpc_response = JSONRPCResponse(**json_obj)
+            print(
+                f"Client converting JSON-RPC response to MCPResult object: {jsonrpc_response}"
+            )
+            mcp_result = jsonrpc_response.from_json_rpc()
+            print(
+                f"Client converted JSON-RPC response to MCPResult object: {mcp_result}"
+            )
+            return mcp_result
         except ValueError as e:
             raise ValueError(f"Invalid JSON-RPC response from server: {e}")
         # Convert JSONRPCResponse to the appropriate MCPResponse.

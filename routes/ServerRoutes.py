@@ -11,6 +11,7 @@ First of functions to implement:
 
 from MCPLite.messages import *
 from MCPLite.messages.init.ServerInit import Implementation, ServerCapabilities
+from MCPLite.messages.Responses import TextContent
 from MCPLite.primitives import ServerRegistry, MCPTool
 from pydantic import ValidationError
 
@@ -20,7 +21,7 @@ class ServerRoute:
     def __init__(self, registry: ServerRegistry):
         self.registry = registry
 
-    def __call__(self, request: MCPRequest) -> MCPMessage:
+    def __call__(self, request: MCPRequest) -> MCPResult:
         """
         Call the appropriate route based on the request method.
         Args:
@@ -28,9 +29,10 @@ class ServerRoute:
         Returns:
             MCPMessage: The response to the request.
         """
+        print(f"Routing request: {request}")
         # Check if the request is a notification or a request.
-        if str(request.method.root) in self.routes:
-            return self.routes[str(request.method.root)](self, request)
+        if str(request.method) in self.routes:
+            return self.routes[str(request.method)](self, request)
         else:
             raise ValueError(f"Invalid method: {request.method}")
 
@@ -124,7 +126,7 @@ class ServerRoute:
         Returns:
             tuple[str, CallToolResult]: The ID and the tool response.
         """
-
+        print(f"Routed to tools_call route: {request}")
         try:
             tool_name = request.params.name
         except AttributeError:
@@ -136,9 +138,16 @@ class ServerRoute:
         for tool in self.registry.tools:
             if tool_name == request.params.name:
                 request_dict = request.model_dump()
-                tool_response = tool(**request_dict["params"])
+                # Call the tool with the provided arguments
+                # TBD: we also have ImageContent and EmbeddedResource besides TextContent; implement later.
+                print(
+                    f"Calling tool: {tool_name} with arguments: {request_dict['params']['arguments']}"
+                )
+                tool_response: TextContent = tool(**request_dict["params"]["arguments"])
+                content = [tool_response]
+                print(f"Returning tool response: CallToolResult + content: {content}")
                 return CallToolResult(
-                    content=tool_response,
+                    content=content,
                 )
         raise ValueError(f"Tool {tool_name} not found in registry.")
 

@@ -6,40 +6,47 @@ import json
 from enum import Enum
 
 
-class Method(RootModel):
+class Method(str, Enum):
     """
-    A class to represent the method of a request.
+    Request methods are constrained to this list.
     """
 
-    root: Literal[
-        "completion/complete",
-        "initialize",
-        "logging/setLevel",
-        "ping",
-        "prompts/get",
-        "prompts/list",
-        "resources/list",
-        "resources/read",
-        "resources/subscribe",
-        "resources/templates/list",
-        "resources/unsubscribe",
-        "roots/list",
-        "sampling/createMessage",
-        "tools/call",
-        "tools/list",
-    ]
+    COMPLETION_COMPLETE = "completion/complete"
+    INITIALIZE = "initialize"
+    LOGGING_SET_LEVEL = "logging/setLevel"
+    PING = "ping"
+    PROMPTS_GET = "prompts/get"
+    PROMPTS_LIST = "prompts/list"
+    RESOURCES_LIST = "resources/list"
+    RESOURCES_READ = "resources/read"
+    RESOURCES_SUBSCRIBE = "resources/subscribe"
+    RESOURCES_TEMPLATES_LIST = "resources/templates/list"
+    RESOURCES_UNSUBSCRIBE = "resources/unsubscribe"
+    ROOTS_LIST = "roots/list"
+    SAMPLING_CREATE_MESSAGE = "sampling/createMessage"
+    TOOLS_CALL = "tools/call"
+    TOOLS_LIST = "tools/list"
+
+    # This ensures the enum serializes to just the string value
+    def __str__(self) -> str:
+        return self.value
+
+    # This helps with JSON serialization
+    def __repr__(self) -> str:
+        return repr(self.value)
 
 
 class JSONRPCRequest(BaseModel):
     """
     JSON-RPC 2.0 request object.
     MCPRequests get blessed to this when it's time for transport.
+    We don't worry about the pydantic subclasses (for Params, for example) -- this is just a dict and is created as such from MCPRequest.
     """
 
     jsonrpc: Literal["2.0"] = "2.0"
     id: int | str
     method: Method
-    params: BaseModel | dict | None
+    params: dict | None
 
     def from_json_rpc(
         self,
@@ -72,6 +79,7 @@ class MCPRequest(MCPMessage):
         """
         Convert this message object to a JSONRPCRequest.
         """
+        # Make everything a dict, we shouldn't worry about nested classes here since the ultimate purpose is creating json.
         if self.params and isinstance(self.params, BaseModel):
             params_dict = self.params.model_dump() if self.params else None
         elif self.params:

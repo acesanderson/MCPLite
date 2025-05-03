@@ -6,7 +6,7 @@ from pydantic import Json
 class Transport(ABC):
 
     @abstractmethod
-    def send_json(self, json_string: str):
+    def send_json(self, json_string: str) -> Json:
         pass
 
 
@@ -21,7 +21,12 @@ class DirectTransport(Transport):
 
     def send_json(self, json_string: str) -> Json:
         # Directly send the JSON string
+        print(f"Sending JSON from transport to server: {json_string}")
         json_response = self.server_function(json_string)
+        print(
+            f"Transport received JSON response from server: {json_response}; returning to client."
+        )
+        return json_response
 
 
 # class ClientTransport(BaseTransport):

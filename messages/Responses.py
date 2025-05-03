@@ -34,7 +34,7 @@ class JSONRPCResponse(MCPMessage):
 
     id: Union[str, int]
     jsonrpc: Literal["2.0"] = "2.0"
-    result: MCPResult
+    result: dict
 
     def from_json_rpc(
         self,
