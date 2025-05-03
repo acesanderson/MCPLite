@@ -38,7 +38,7 @@ class JSONRPCResponse(MCPMessage):
 
     def from_json_rpc(
         self,
-    ) -> Optional[MCPResult]:
+    ) -> MCPResult:
         """
         Convert this response's result to the appropriate Result object.
 
@@ -53,7 +53,7 @@ class JSONRPCResponse(MCPMessage):
             # Check for fields specific to different result types
             # if "serverInfo" in result_data and "protocolVersion" in result_data:
             #     return InitializeResult(**result_data)
-            if "contents" in result_data:
+            if "resource" in result_data:
                 return ReadResourceResult(**result_data)
 
             elif "resources" in result_data:
@@ -81,6 +81,10 @@ class JSONRPCResponse(MCPMessage):
 
             # elif "roots" in result_data:
             #     return ListRootsResult(**result_data)
+
+        raise ValueError(
+            f"Unknown result type: {result_data}. Please check the MCP protocol for updates."
+        )
 
 
 # Content types

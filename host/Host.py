@@ -174,7 +174,7 @@ class Host:  # ineerit from Chat?
             if buffer and not mcpmessage:
                 # If we have a buffer but no mcpmessage, we can just return the buffer.
                 self.message_store.add_new(role="assistant", content=buffer)
-                break
+                continue
             if mcpmessage:
                 # If we have a mcpmessage, we need to process it and return the observation.
                 self.message_store.add_new(role="assistant", content=buffer)
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     client = Client(transport=DirectTransport(server.process_message))
     host.add_client(client)
     print("Running host.query ...")
-    stuff = host.query("What is 2333 + 1266? Use the add function.")
-    # stuff = host.query("What is the name of my cute sheepadoodle?")
+    # stuff = host.query("What is 2333 + 1266? Use the add function.")
+    stuff = host.query("What is the name of my cute sheepadoodle?")
     # print(type(stuff))
     # print(stuff)

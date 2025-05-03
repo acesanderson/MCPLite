@@ -11,7 +11,6 @@ from MCPLite.messages import (
 from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport.Transport import DirectTransport
-from MCPLite.routes.ClientRoutes import ClientRoute
 import json
 from typing import Optional, Callable
 
@@ -28,7 +27,6 @@ class Client:
         self.registry = ClientRegistry()
         self.transport = transport
         self.server_function = server_function
-        self.route = ClientRoute(self.registry)
         # Currently, the only transport is DirectTransport.
         if self.transport == "DirectTransport" and server_function is None:
             raise ValueError(

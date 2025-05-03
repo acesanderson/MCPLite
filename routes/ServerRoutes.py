@@ -11,7 +11,12 @@ First of functions to implement:
 
 from MCPLite.messages import *
 from MCPLite.messages.init.ServerInit import Implementation, ServerCapabilities
-from MCPLite.messages.Responses import TextContent
+from MCPLite.messages.Responses import (
+    TextContent,
+    ReadResourceResult,
+    ResourceContents,
+    TextResourceContents,
+)
 from MCPLite.primitives import ServerRegistry, MCPTool
 from pydantic import ValidationError
 
@@ -79,7 +84,7 @@ class ServerRoute:
     def resources_list(self, request: ListResourcesRequest) -> ListResourcesResult:
         pass
 
-    def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult:
+    def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult | None:
         """
         Read a resource from the registry.
         Args:
@@ -92,16 +97,23 @@ class ServerRoute:
 
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
-        if request.params.name not in [
-            resource.name for resource in self.registry.resources
+        if request.params.uri not in [
+            resource.uri for resource in self.registry.resources
         ]:
-            raise ValueError(f"Resource {request.params.name} not found in registry.")
+            raise ValueError(f"Resource {request.params.uri} not found in registry.")
         for resource in self.registry.resources:
-            if resource.name == request.params.name:
-                resource_response = resource()
-                return id, ResourceResponse(
-                    result=resource_response,
-                )
+            if resource.uri == request.params.uri:
+                try:
+                    resource_data = resource()
+                    contents = TextResourceContents(
+                        uri=resource.uri, text=resource_data, mimeType="text/plain"
+                    )
+                    resource_content = ResourceContents(
+                        uri=resource.uri, contents=contents
+                    )
+                    return ReadResourceResult(_meta=None, resource=resource_content)
+                except ValidationError as e:
+                    raise ValueError(f"Error reading resource {resource.uri}: {e}")
 
     def resources_subscribe(self, request) -> None:
         pass
@@ -147,6 +159,7 @@ class ServerRoute:
                 content = [tool_response]
                 print(f"Returning tool response: CallToolResult + content: {content}")
                 return CallToolResult(
+                    _meta=None,
                     content=content,
                 )
         raise ValueError(f"Tool {tool_name} not found in registry.")
