@@ -4,12 +4,15 @@ from MCPLite.messages import (
     InitializeResult,
     ListPromptsRequest,
     ListToolsRequest,
+    ListToolsResult,
+    ListResourcesResult,
     ListResourcesRequest,
     JSONRPCResponse,
+    JSONRPCRequest,
     MCPResult,
+    minimal_client_initialization,
 )
 from MCPLite.logs.logging_config import get_logger
-from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport.Transport import DirectTransport
 import json
@@ -38,6 +41,7 @@ class Client:
             )
         if self.transport == "DirectTransport":
             self.transport = DirectTransport(self.server_function)
+        self.initialized: bool = False
 
     def initialize(self):
         """
@@ -47,23 +51,31 @@ class Client:
         # Send the InitializeRequest to the server, receive the InitializeResponse, and update the registry.
         initialize_request: InitializeRequest = minimal_client_initialization()
         logger.info("Client sending InitializeRequest")
-        jsonrpc_request = initialize_request.to_jsonrpc()
-        jsonrpc_response = self.transport.send_json(jsonrpc_request.model_dump_json())
-        # Parse the JSON-RPC response.
-        jsonrpc_response = JSONRPCResponse(**json.loads(jsonrpc_response))
-        initialize_result: InitializeResult = jsonrpc_response.from_json_rpc()
+        initialize_result: InitializeResult = self.send_request(initialize_request)
+        if isinstance(initialize_result, InitializeResult):
+            self.initialized = True
         logger.info("Client received InitializeResult")
-        print(initialize_result)
-        # capabilities = initialize_result.capabilities
+        capabilities = initialize_result.capabilities
         # if capabilities.prompts:
-        #     prompts = self.send_request(ListPromptsRequest())
-        #     self.registry.prompts = prompts
-        # if capabilities.resources:
-        #     resources = self.send_request(ListResourcesRequest())
-        #     self.registry.resources = resources
-        # if capabilities.tools:
-        #     tools = self.send_request(ListToolsRequest())
-        #     self.registry.tools = tools
+        # prompts = self.send_request(ListPromptsRequest())
+        # self.registry.prompts = prompts
+        if capabilities.resources:
+            logger.info("Client sending ListResourcesRequest")
+            list_resources_request = ListResourcesRequest()
+            list_resources_result: ListResourcesResult = self.send_request(
+                list_resources_request
+            )
+            logger.info("Client received ListResourcesResult")
+            self.registry.resources = list_resources_result.resources
+            logger.info("Client updated registry with resources")
+        if capabilities.tools:
+            logger.info("Client sending ListToolsRequest")
+            list_tools_request = ListToolsRequest()
+            list_tools_results: ListToolsResult = self.send_request(list_tools_request)
+            logger.info("Client received ListResourcesResult")
+            self.registry.tools = list_tools_results.tools
+            logger.info("Client updated registry with resources")
+            print(self.registry)
 
     def send_request(self, request: MCPRequest) -> MCPResult:
         """

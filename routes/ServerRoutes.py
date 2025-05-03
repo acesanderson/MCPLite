@@ -10,14 +10,15 @@ First of functions to implement:
 """
 
 from MCPLite.messages import *
-from MCPLite.messages.init.ServerInit import Implementation, ServerCapabilities
 from MCPLite.messages.Responses import (
     TextContent,
     ReadResourceResult,
     ResourceContents,
+    ResourceDefinition,
     TextResourceContents,
+    minimal_server_initialization,
 )
-from MCPLite.messages import minimal_server_initialization
+from MCPLite.messages.Definitions import ToolDefinition
 from MCPLite.primitives import ServerRegistry
 from pydantic import ValidationError
 
@@ -63,7 +64,19 @@ class ServerRoute:
         pass
 
     def resources_list(self, request: ListResourcesRequest) -> ListResourcesResult:
-        pass
+        """
+        List all resources in the registry.
+        Args:
+            request (ListResourcesRequest): The request to list resources.
+        Returns:
+            ListResourcesResult: The result containing the list of resources.
+        """
+        if len(self.registry.resources) == 0:
+            raise ValueError("No resources found in registry.")
+        resource_list: list[ResourceDefinition] = [
+            resource.definition for resource in self.registry.resources
+        ]
+        return ListResourcesResult(_meta=None, resources=resource_list)
 
     def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult | None:
         """
@@ -146,7 +159,19 @@ class ServerRoute:
         raise ValueError(f"Tool {tool_name} not found in registry.")
 
     def tools_list(self, request: ListToolsRequest) -> ListToolsResult:
-        pass
+        """
+        List all tools in the registry.
+        Args:
+            request (ListToolsRequest): The request to list tools.
+        Returns:
+            ListToolsResult: The result containing the list of tools.
+        """
+        if len(self.registry.tools) == 0:
+            raise ValueError("No tools found in registry.")
+        tool_list: list[ToolDefinition] = [
+            tool.definition for tool in self.registry.tools
+        ]
+        return ListToolsResult(_meta=None, tools=tool_list)
 
     routes = {
         "completion/complete": tools_call,
