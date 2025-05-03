@@ -15,7 +15,7 @@ Server - The internal class that handles routing requests to the appropriate han
 
 from MCPLite.primitives import MCPTool, MCPResource, MCPPrompt, ServerRegistry
 from MCPLite.server.Server import Server
-from MCPLite.transport.Transport import Transport
+from MCPLite.transport.Transport import Transport, DirectTransport
 from typing import Callable, Optional
 
 
@@ -26,10 +26,16 @@ class MCPLite:
     It also manages the server instance and provides a run method.
     """
 
-    def __init__(self, transport: Optional[Transport] = None):
+    def __init__(self, transport: Optional[Transport | str] = None):
         self.registry = ServerRegistry()
-        self.transport = transport
-        self.server = Server(self.registry, transport)
+        self.server = Server(self.registry, transport=None)
+        if transport == "DirectTransport":
+            self.transport = DirectTransport(self.server.process_message)
+            self.server.transport = self.transport
+        elif isinstance(transport, Transport):
+            self.server.transport = transport
+        else:
+            raise ValueError("Need to provide a Transport class to Server.")
 
     def run(self):
         """
