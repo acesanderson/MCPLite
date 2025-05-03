@@ -55,23 +55,26 @@ When you need to use any capability:
 
 The system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should incorporate into your response appropriately.
 
+If you have a final answer, wrap it in xml tags like this:
+<answer></answer>
+
 {% if tools %}
 You have access to the following tools:
 {% for tool in tools %}
 {{tool}}
 {% endfor %}
 {% endif %}
-
 {% if resources %}
 You have access to the following resources:
 {% for resource in resources %}
 {{resource}}
 {% endfor %}
 {% endif %}
-
 {% if prompts %}
 You have access to the following prompts:
 {% for prompt in prompts %}
 {{prompt}}
 {% endfor %}
 {% endif %}
+
+Remember to wrap your final answer in <answer> tags.

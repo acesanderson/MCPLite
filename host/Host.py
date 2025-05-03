@@ -57,14 +57,20 @@ class Host:  # ineerit from Chat?
         rendered = system_prompt.render(input_variables)
         return rendered
 
-    def process_stream(self, stream) -> tuple[str, MCPMessage | None]:
+    def process_stream(self, stream) -> tuple[str, MCPMessage | None | dict]:
         buffer = ""
 
         for chunk in stream:
-            print(str(chunk.choices[0].delta.content), end="", flush=True)
+            # print(str(chunk.choices[0].delta.content), end="", flush=True)
             # print(chunk.choices[0].delta.content.strip())
             buffer += str(chunk.choices[0].delta.content)
 
+            # Look for <answer> tags, if found, return the content
+            if "<answer>" in buffer and "</answer>" in buffer:
+                start_idx = buffer.index("<answer>") + len("<answer>")
+                end_idx = buffer.index("</answer>")
+                answer = buffer[start_idx:end_idx]
+                return buffer, {"answer": answer}
             # Look for any complete JSON object
             json_objects = self.find_json_objects(buffer)
 
@@ -170,17 +176,21 @@ class Host:  # ineerit from Chat?
             # Query OpenAI with the messages so far
             stream = self.model.stream(self.message_store.messages, verbose=False)
             # Get the response and any mcpmessage
-            buffer, mcpmessage = self.process_stream(stream)
-            if buffer and not mcpmessage:
+            buffer, special_catch = self.process_stream(stream)
+            if isinstance(special_catch, dict):
+                answer = special_catch.get("answer")
+                print("Answer found:", answer)
+                break
+            elif special_catch is None:
                 # If we have a buffer but no mcpmessage, we can just return the buffer.
                 self.message_store.add_new(role="assistant", content=buffer)
                 continue
-            if mcpmessage:
+            elif isinstance(special_catch, MCPMessage):
                 # If we have a mcpmessage, we need to process it and return the observation.
                 self.message_store.add_new(role="assistant", content=buffer)
                 # Process the message
-                print("Processing MCP message:", mcpmessage)
-                observation: MCPResult = self.process_message(mcpmessage)
+                print("Processing MCP message:", special_catch)
+                observation: MCPResult = self.process_message(special_catch)
                 print(
                     "Observation received, either None or valid MCPResult:", observation
                 )
