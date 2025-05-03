@@ -42,7 +42,9 @@ def add(a: int, b: int) -> int:
 
 
 # Create our client
-client = Client()  # Default is DirectTransport
+client = Client(
+    server_function=mcp.server.process_message
+)  # Default is DirectTransport
 client.initialize()
 
 # Set up our Host

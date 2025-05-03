@@ -8,6 +8,8 @@ from MCPLite.messages.Requests import (
     ListResourcesRequest,
     ListPromptsRequest,
     ListToolsRequest,
+    InitializeRequest,
+    minimal_client_initialization,
     parse_request,
 )
 from MCPLite.messages.Responses import (
@@ -19,10 +21,10 @@ from MCPLite.messages.Responses import (
     CallToolResult,
     GetPromptResult,
     ReadResourceResult,
+    InitializeResult,
+    minimal_server_initialization,
 )
-from MCPLite.messages.init.ClientInit import InitializeRequest
 from MCPLite.messages.init.Initialized import InitializedNotification
-from MCPLite.messages.init.ServerInit import InitializeResult
 
 __all__ = [
     "MCPMessage",
@@ -46,4 +48,7 @@ __all__ = [
     "InitializedNotification",
     "InitializeResult",
     "parse_request",
+    "minimal_client_initialization",
+    "InitializeResult",
+    "minimal_server_initialization",
 ]

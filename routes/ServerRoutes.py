@@ -17,7 +17,8 @@ from MCPLite.messages.Responses import (
     ResourceContents,
     TextResourceContents,
 )
-from MCPLite.primitives import ServerRegistry, MCPTool
+from MCPLite.messages import minimal_server_initialization
+from MCPLite.primitives import ServerRegistry
 from pydantic import ValidationError
 
 
@@ -44,30 +45,10 @@ class ServerRoute:
     def initialize(self, request: InitializeRequest) -> InitializeResult:
         """
         Client may have something interesting to tell the server, but for now we just treat this is a ping.
+        TBD: Eventually we should be interested about Client capabilities; for now it's just a howdy.
         """
-        # Build the initialize result
-        server_info = Implementation(name="MyMinimalServer", version="0.1.0")
-
-        # Create minimal capabilities (empty object)
-        capabilities = ServerCapabilities(
-            prompts={
-                "listChanged": False  # Server supports notifications for prompt list changes
-            },
-            resources={
-                "listChanged": False,  # Server supports notifications for resource list changes
-                "subscribe": False,  # Server supports subscribing to resource updates
-            },
-            tools={
-                "listChanged": False  # Server doesn't support notifications for tool list changes
-            },
-        )
-        # Create the full result
-        result = InitializeResult(
-            capabilities=capabilities, protocolVersion="1.0.0", serverInfo=server_info
-        )
-
-        # Return the result as a JSON string
-        return result
+        _ = request
+        return minimal_server_initialization()
 
     def logging_setLevel(self, request) -> None:
         pass

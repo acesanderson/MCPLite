@@ -922,3 +922,63 @@
 2025-05-03 16:02:41,133 [DEBUG] httpcore.http11:45 (trace) - response_closed.complete
 2025-05-03 16:03:08,463 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
 2025-05-03 16:03:09,325 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:36:23,652 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:36:24,518 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:37:34,047 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:37:34,904 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:37:34,904 [INFO] MCPLite.client.Client:37 (initialize) - Client initializing
+2025-05-03 16:37:34,904 [INFO] MCPLite.client.Client:40 (initialize) - Client sending InitializeRequest
+2025-05-03 16:39:54,691 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:39:55,553 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:39:55,553 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:39:55,553 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:41:35,819 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:41:36,680 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:41:36,680 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:41:36,680 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:43:40,262 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:43:41,126 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:43:41,126 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:43:41,126 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:50:32,161 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:52:32,376 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:53:36,027 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:56:37,053 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:56:37,922 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:56:37,923 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:56:37,923 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:58:02,921 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:58:03,790 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:58:03,791 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:58:03,791 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:58:40,120 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:58:40,986 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:58:40,986 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:58:40,986 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:59:37,677 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 16:59:38,536 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 16:59:38,537 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 16:59:38,537 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 16:59:38,537 [INFO] MCPLite.client.Client:54 (initialize) - Client received InitializeResult
+2025-05-03 17:00:59,505 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 17:01:00,375 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 17:01:00,375 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 17:01:00,375 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 17:01:00,375 [INFO] MCPLite.client.Client:54 (initialize) - Client received InitializeResult
+2025-05-03 17:05:50,401 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 17:05:51,269 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 17:05:51,269 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 17:05:51,269 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 17:07:11,939 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 17:07:12,807 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 17:07:12,807 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 17:07:12,807 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 17:08:30,978 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 17:08:31,845 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 17:08:31,846 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 17:08:31,846 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 17:10:54,237 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 17:10:55,105 [INFO] mcplite:24 (<module>) - Initializing MCPLite application
+2025-05-03 17:10:55,105 [INFO] MCPLite.client.Client:46 (initialize) - Client initializing
+2025-05-03 17:10:55,105 [INFO] MCPLite.client.Client:49 (initialize) - Client sending InitializeRequest
+2025-05-03 17:10:55,106 [INFO] MCPLite.client.Client:55 (initialize) - Client received InitializeResult

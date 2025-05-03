@@ -8,11 +8,15 @@ from MCPLite.messages import (
     JSONRPCResponse,
     MCPResult,
 )
+from MCPLite.logs.logging_config import get_logger
 from MCPLite.messages.init.ClientInit import minimal_client_initialization
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport.Transport import DirectTransport
 import json
 from typing import Optional, Callable
+
+# Get logger with this module's name
+logger = get_logger(__name__)
 
 
 class Client:
@@ -39,21 +43,27 @@ class Client:
         """
         Initialize the client.
         """
+        logger.info("Client initializing")
         # Send the InitializeRequest to the server, receive the InitializeResponse, and update the registry.
         initialize_request: InitializeRequest = minimal_client_initialization()
-        initialize_result: InitializeResult = self.transport.send_json(
-            initialize_request.model_dump_json()
-        )
-        capabilities = initialize_result.capabilities
-        if capabilities.prompts:
-            prompts = self.send_request(ListPromptsRequest())
-            self.registry.prompts = prompts
-        if capabilities.resources:
-            resources = self.send_request(ListResourcesRequest())
-            self.registry.resources = resources
-        if capabilities.tools:
-            tools = self.send_request(ListToolsRequest())
-            self.registry.tools = tools
+        logger.info("Client sending InitializeRequest")
+        jsonrpc_request = initialize_request.to_jsonrpc()
+        jsonrpc_response = self.transport.send_json(jsonrpc_request.model_dump_json())
+        # Parse the JSON-RPC response.
+        jsonrpc_response = JSONRPCResponse(**json.loads(jsonrpc_response))
+        initialize_result: InitializeResult = jsonrpc_response.from_json_rpc()
+        logger.info("Client received InitializeResult")
+        print(initialize_result)
+        # capabilities = initialize_result.capabilities
+        # if capabilities.prompts:
+        #     prompts = self.send_request(ListPromptsRequest())
+        #     self.registry.prompts = prompts
+        # if capabilities.resources:
+        #     resources = self.send_request(ListResourcesRequest())
+        #     self.registry.resources = resources
+        # if capabilities.tools:
+        #     tools = self.send_request(ListToolsRequest())
+        #     self.registry.tools = tools
 
     def send_request(self, request: MCPRequest) -> MCPResult:
         """
