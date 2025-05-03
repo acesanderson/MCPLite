@@ -72,11 +72,17 @@ class MCPRequest(MCPMessage):
         """
         Convert this message object to a JSONRPCRequest.
         """
+        if self.params and isinstance(self.params, BaseModel):
+            params_dict = self.params.model_dump() if self.params else None
+        elif self.params:
+            params_dict = self.params
+        else:
+            params_dict = None
         return JSONRPCRequest(
             jsonrpc="2.0",
             id=uuid4().hex,
             method=self.method,
-            params=self.params.model_dump() if self.params else None,
+            params=params_dict,
         )
 
 
