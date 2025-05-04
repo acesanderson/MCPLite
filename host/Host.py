@@ -6,7 +6,7 @@ Host takes optional clients.
 """
 
 import json
-from Chain import Message, Model, Prompt, MessageStore
+from Chain import Chain, Message, Model, Prompt, MessageStore
 from MCPLite.messages import (
     MCPMessage,
     MCPResult,
@@ -15,6 +15,7 @@ from MCPLite.messages import (
     GetPromptResult,
     Method,
     GetPromptRequestParams,
+    PromptMessage,
 )
 from MCPLite.primitives import ClientRegistry, ServerRegistry
 from MCPLite.transport.Transport import DirectTransport
@@ -221,6 +222,18 @@ class Host:  # ineerit from Chat?
                             content=observation.model_dump_json(indent=2),
                         )
 
+    def convert_PromptMessage_to_Message(
+        self, prompt_message: PromptMessage
+    ) -> Message:
+        """
+        Convert a PromptMessage to a Message (Chain).
+        """
+        role = prompt_message.role
+        content = prompt_message.content
+        text = content.text
+        message = Message(role=role, content=text)
+        return message
+
     def run_prompt(self, prompt_name: str, **kwargs) -> str:
         """
         Run a prompt with the given arguments.
@@ -243,7 +256,21 @@ class Host:  # ineerit from Chat?
                 )
         logger.info(f"Running prompt: {prompt_request}")
         prompt_result: GetPromptResult = self.clients[0].send_request(prompt_request)
-        print(prompt_result)
+        if prompt_result:
+            logger.info(f"Received result: {prompt_result}")
+            messages = prompt_result.messages
+            for message in messages:
+                if isinstance(message, PromptMessage):
+                    # Convert PromptMessage to Message (Chain)
+                    message = self.convert_PromptMessage_to_Message(message)
+                    self.message_store.add_new(
+                        role=message.role, content=message.content
+                    )
+            logger.info("Running prompt result")
+            # Now run the messages
+            chain = Chain(model=self.model)
+            response = chain.run(messages=self.message_store.messages)
+            print(response.content)
 
 
 if __name__ == "__main__":

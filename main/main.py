@@ -8,7 +8,8 @@ import logging
 
 # Set up logging with trace mode for detailed flow tracking
 logger = configure_logging(
-    level=logging.DEBUG,  # Show all log levels
+    # level=logging.DEBUG,  # Show all log levels
+    level=logging.ERROR,  # Show only errors
     log_file="mcplite_trace.log",  # Also save to file
     trace_mode=True,  # Include line numbers and function names
 )
