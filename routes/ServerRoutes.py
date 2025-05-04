@@ -95,9 +95,7 @@ class ServerRoute:
                 logger.info(
                     f"Returning prompt response: GetPromptResult + messages: {messages}"
                 )
-                return GetPromptResult(
-                    _meta=None, description=prompt.description, messages=messages
-                )
+                return prompt_response
         raise ValueError(f"Prompt {prompt_name} not found in registry.")
 
     def prompts_list(self, request: ListPromptsRequest) -> ListPromptsResult:
