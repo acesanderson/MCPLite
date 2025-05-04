@@ -4,20 +4,13 @@ Note: main class needs to be refactored for pydantic
 
 from typing import Callable
 from inspect import signature
-from MCPLite.messages import PromptDefinition, GetPromptResult
+from MCPLite.messages import PromptDefinition, GetPromptResult, Argument
 from MCPLite.messages.Responses import TextContent
 from pydantic import BaseModel, Field
-import json
 from typing import Literal
 
 
 # Some basic types required for Prompts
-class Argument(BaseModel):
-    name: str
-    description: str
-    required: bool
-
-
 class PromptMessage(BaseModel):
     """Base class for all prompt messages."""
 

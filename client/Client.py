@@ -3,6 +3,7 @@ from MCPLite.messages import (
     InitializeRequest,
     InitializeResult,
     ListPromptsRequest,
+    ListPromptsResult,
     ListToolsRequest,
     ListToolsResult,
     ListResourcesResult,
@@ -40,7 +41,7 @@ class Client:
                 "DirectTransport requires a server_function to be provided."
             )
         if self.transport == "DirectTransport":
-            self.transport = DirectTransport(self.server_function)
+            self.transport = DirectTransport(self.server_function)  # type: ignore
         self.initialized: bool = False
 
     def initialize(self):
@@ -51,7 +52,9 @@ class Client:
         # Send the InitializeRequest to the server, receive the InitializeResponse, and update the registry.
         initialize_request: InitializeRequest = minimal_client_initialization()
         logger.info("Client sending InitializeRequest")
-        initialize_result: InitializeResult = self.send_request(initialize_request)
+        initialize_result: InitializeResult = self.send_request(
+            initialize_request
+        )  # type:ignore
         if isinstance(initialize_result, InitializeResult):
             self.initialized = True
         logger.info("Client received InitializeResult")
@@ -62,7 +65,7 @@ class Client:
         if capabilities.resources:
             logger.info("Client sending ListResourcesRequest")
             list_resources_request = ListResourcesRequest()
-            list_resources_result: ListResourcesResult = self.send_request(
+            list_resources_result: ListResourcesResult = self.send_request(  # type: ignore
                 list_resources_request
             )
             logger.info("Client received ListResourcesResult")
@@ -71,11 +74,19 @@ class Client:
         if capabilities.tools:
             logger.info("Client sending ListToolsRequest")
             list_tools_request = ListToolsRequest()
-            list_tools_results: ListToolsResult = self.send_request(list_tools_request)
+            list_tools_results: ListToolsResult = self.send_request(list_tools_request)  # type: ignore
             logger.info("Client received ListResourcesResult")
             self.registry.tools = list_tools_results.tools
             logger.info("Client updated registry with resources")
-            print(self.registry)
+        if capabilities.prompts:
+            logger.info("Client sending ListPromptsRequest")
+            list_prompts_request = ListPromptsRequest()
+            list_prompts_result: ListPromptsResult = self.send_request(  # type: ignore
+                list_prompts_request
+            )
+            logger.info("Client received ListPromptsResult")
+            self.registry.prompts = list_prompts_result.prompts
+            logger.info("Client updated registry with prompts")
 
     def send_request(self, request: MCPRequest) -> MCPResult:
         """
@@ -86,7 +97,7 @@ class Client:
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
         print("Client sending JSON-RPC request through transport")
-        json_response = self.transport.send_json(json_str)
+        json_response = self.transport.send_json(json_str)  # type: ignore
         print(f"Client received JSON-RPC response from transport: {json_response}")
         json_obj = json.loads(json_response)
         try:

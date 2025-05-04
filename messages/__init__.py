@@ -28,6 +28,7 @@ from MCPLite.messages.Definitions import (
     PromptDefinition,
     ToolDefinition,
     ResourceDefinition,
+    Argument,
 )
 from MCPLite.messages.init.Initialized import InitializedNotification
 
@@ -59,4 +60,5 @@ __all__ = [
     "PromptDefinition",
     "ToolDefinition",
     "ResourceDefinition",
+    "Argument",
 ]

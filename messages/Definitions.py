@@ -5,12 +5,13 @@ class Definition(BaseModel):
     pass
 
 
-class PromptDefinition(Definition):
-    class Argument(BaseModel):
-        name: str
-        description: str
-        required: bool
+class Argument(BaseModel):
+    name: str
+    description: str
+    required: bool
 
+
+class PromptDefinition(Definition):
     name: str
     description: str
     arguments: list[Argument]

@@ -54,10 +54,10 @@ def partner(topic: str):
 
 
 # Create our client
-# client = Client(
-#     server_function=mcp.server.process_message
-# )  # Default is DirectTransport
-# client.initialize()
+client = Client(
+    server_function=mcp.server.process_message
+)  # Default is DirectTransport
+client.initialize()
 #
 # Set up our Host
 # host = Host(model="gpt")

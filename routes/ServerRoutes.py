@@ -61,7 +61,20 @@ class ServerRoute:
         pass
 
     def prompts_list(self, request: ListPromptsRequest) -> ListPromptsResult:
-        pass
+        """
+        List all prompts in the registry.
+
+        Args:
+            request (ListPromptsRequest): The request to list prompts.
+        Returns:
+            ListPromptsResult: The result containing the list of prompts.
+        """
+        if len(self.registry.prompts) == 0:
+            raise ValueError("No prompts found in registry.")
+        prompt_list: list[PromptDefinition] = [
+            prompt.definition for prompt in self.registry.prompts
+        ]
+        return ListPromptsResult(_meta=None, prompts=prompt_list, nextCursor=None)
 
     def resources_list(self, request: ListResourcesRequest) -> ListResourcesResult:
         """
@@ -85,8 +98,6 @@ class ServerRoute:
             request (ResourceRequest): The request to read the resource.
         Returns:
             tuple[str, ResourceResponse]: The ID and the resource response.
-
-        TBD: MATCH ON URI, NOT NAME
         """
 
         if len(self.registry.resources) == 0:
