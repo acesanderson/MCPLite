@@ -58,8 +58,7 @@ client = Client(
     server_function=mcp.server.process_message
 )  # Default is DirectTransport
 client.initialize()
-#
 # Set up our Host
-# host = Host(model="gpt")
-# host.add_client(client)
-# host.query("What's the name of my cute sheepadoodle?")
+host = Host(model="gpt")
+host.add_client(client)
+host.run_prompt(prompt_name="partner", topic="AI Safety")

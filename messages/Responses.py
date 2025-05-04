@@ -180,11 +180,11 @@ class ListPromptsResult(MCPResult):
 
 class PromptMessage(BaseModel):
     """
-    A message in a prompt, with content and role.
+    Base class for all prompt messages.
     """
 
-    role: Role
-    content: list[Union[TextContent, ImageContent, EmbeddedResource]]
+    role: Literal["user", "assistant"]
+    content: TextContent
 
 
 class GetPromptResult(MCPResult):

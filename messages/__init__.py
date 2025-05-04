@@ -1,9 +1,11 @@
 from MCPLite.messages.MCPMessage import MCPMessage
 from MCPLite.messages.Requests import (
+    Method,
     MCPRequest,
     JSONRPCRequest,
     CallToolRequest,
     GetPromptRequest,
+    GetPromptRequestParams,
     ReadResourceRequest,
     ListResourcesRequest,
     ListPromptsRequest,
@@ -20,6 +22,7 @@ from MCPLite.messages.Responses import (
     ListToolsResult,
     CallToolResult,
     GetPromptResult,
+    PromptMessage,
     ReadResourceResult,
     InitializeResult,
     minimal_server_initialization,
@@ -46,6 +49,8 @@ __all__ = [
     "JSONRPCResponse",
     "CallToolResult",
     "GetPromptResult",
+    "GetPromptRequestParams",
+    "PromptMessage",
     "ReadResourceResult",
     "ListResourcesResult",
     "ListPromptsResult",
@@ -61,4 +66,5 @@ __all__ = [
     "ToolDefinition",
     "ResourceDefinition",
     "Argument",
+    "Method",
 ]

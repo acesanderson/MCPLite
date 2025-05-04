@@ -7,13 +7,26 @@ Host takes optional clients.
 
 import json
 from Chain import Message, Model, Prompt, MessageStore
-from MCPLite.messages import MCPMessage, MCPResult, parse_request
+from MCPLite.messages import (
+    MCPMessage,
+    MCPResult,
+    parse_request,
+    GetPromptRequest,
+    GetPromptResult,
+    Method,
+    GetPromptRequestParams,
+)
 from MCPLite.primitives import ClientRegistry, ServerRegistry
 from MCPLite.transport.Transport import DirectTransport
 from MCPLite.server.Server import Server
 from MCPLite.client.Client import Client
 from pathlib import Path
 from typing import Optional
+from MCPLite.logs.logging_config import get_logger
+
+# Get logger with this module's name
+logger = get_logger(__name__)
+
 
 # For development, note that our Primitives are not actually used at all on client/host side.
 from MCPLite.primitives import MCPTool, MCPResource
@@ -40,7 +53,9 @@ class Host:  # ineerit from Chat?
         """
         Adds client to list and updates system prompt.
         """
+        client.initialize()
         self.clients.append(client)
+        self.registry += client.registry
         self.system_prompt = self.generate_system_prompt()
 
     def generate_system_prompt(self):
@@ -205,6 +220,30 @@ class Host:  # ineerit from Chat?
                             role="assistant",
                             content=observation.model_dump_json(indent=2),
                         )
+
+    def run_prompt(self, prompt_name: str, **kwargs) -> str:
+        """
+        Run a prompt with the given arguments.
+        This is a simplified version of the MCP capability negotiation.
+        Specifically, this renders capabilities as a string for LLMs to use.
+        """
+        if len(self.registry.prompts) == 0:
+            raise ValueError("No prompts found in registry.")
+        if prompt_name not in [prompt.name for prompt in self.registry.prompts]:
+            raise ValueError(f"Prompt {prompt_name} not found in registry.")
+        for prompt in self.registry.prompts:
+            if prompt_name == prompt.name:
+                params = GetPromptRequestParams(
+                    name=prompt_name,
+                    arguments=kwargs,
+                )
+                prompt_request = GetPromptRequest(
+                    method=Method.PROMPTS_GET,
+                    params=params,
+                )
+        logger.info(f"Running prompt: {prompt_request}")
+        prompt_result: GetPromptResult = self.clients[0].send_request(prompt_request)
+        print(prompt_result)
 
 
 if __name__ == "__main__":

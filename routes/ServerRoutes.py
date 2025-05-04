@@ -58,7 +58,42 @@ class ServerRoute:
         pass
 
     def prompts_get(self, request: GetPromptRequest) -> GetPromptResult:
-        pass
+        """
+        Get a prompt from the registry.
+
+        Args:
+            request (GetPromptRequest): The request to get a prompt.
+        Returns:
+            GetPromptResult: The result containing the prompt.
+        """
+        print(f"Routed to prompts_get route: {request}")
+        try:
+            prompt_name = request.params.name
+        except AttributeError:
+            raise ValueError("Prompt name not found in request parameters.")
+        if len(self.registry.prompts) == 0:
+            raise ValueError("No prompts found in registry.")
+        if request.params.name not in [prompt.name for prompt in self.registry.prompts]:
+            raise ValueError(f"Prompt {request.params.name} not found in registry.")
+        for prompt in self.registry.prompts:
+            if prompt_name == request.params.name:
+                request_dict = request.model_dump()
+                # Call the tool with the provided arguments
+                # TBD: we also have ImageContent and EmbeddedResource besides TextContent; implement later.
+                print(
+                    f"Getting prompt: {prompt_name} with arguments: {request_dict['params']['arguments']}"
+                )
+                prompt_response: GetPromptResult = prompt(
+                    **request_dict["params"]["arguments"]
+                )
+                messages = prompt_response
+                print(
+                    f"Returning prompt response: GetPromptResult + messages: {messages}"
+                )
+                return GetPromptResult(
+                    _meta=None, description=prompt.description, messages=messages
+                )
+        raise ValueError(f"Prompt {prompt_name} not found in registry.")
 
     def prompts_list(self, request: ListPromptsRequest) -> ListPromptsResult:
         """
