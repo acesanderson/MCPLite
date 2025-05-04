@@ -1020,3 +1020,9 @@
 2025-05-03 18:08:19,381 [INFO] MCPLite.client.Client:72 (initialize) - Client sending ListToolsRequest
 2025-05-03 18:08:19,381 [INFO] MCPLite.client.Client:75 (initialize) - Client received ListResourcesResult
 2025-05-03 18:08:19,381 [INFO] MCPLite.client.Client:77 (initialize) - Client updated registry with resources
+2025-05-03 21:43:01,291 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 21:43:02,138 [INFO] mcplite:26 (<module>) - Initializing MCPLite application
+2025-05-03 21:43:28,149 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 21:43:28,997 [INFO] mcplite:26 (<module>) - Initializing MCPLite application
+2025-05-03 21:45:42,803 [INFO] mcplite:94 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-03 21:45:43,651 [INFO] mcplite:26 (<module>) - Initializing MCPLite application

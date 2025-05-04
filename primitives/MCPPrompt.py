@@ -137,5 +137,10 @@ class MCPPrompt(BaseModel):
 
     def __repr__(self):
         """Return a string representation of this prompt."""
-        args_str = json.dumps(self.arguments)
-        return f"<Tool: {self.name}, Description: {self.description}, Parameters: {args_str}>"
+        if self.arguments:
+            args_str = " ".join(
+                [argument.model_dump_json() for argument in self.arguments]
+            )
+        else:
+            args_str = ""
+        return f"<Prompt: {self.name}, Description: {self.description}, Parameters: {args_str}>"

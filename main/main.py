@@ -45,17 +45,20 @@ def add(a: int, b: int) -> int:
 
 @mcp.prompt
 def partner(topic: str):
+    """
+    Suggest some endorsing partners for a given topic.
+    """
     prompt_template = Template(partner_prompt)
     prompt_string = prompt_template.render({"topic": topic})
     return prompt_string
 
 
 # Create our client
-client = Client(
-    server_function=mcp.server.process_message
-)  # Default is DirectTransport
-client.initialize()
-
+# client = Client(
+#     server_function=mcp.server.process_message
+# )  # Default is DirectTransport
+# client.initialize()
+#
 # Set up our Host
 # host = Host(model="gpt")
 # host.add_client(client)
