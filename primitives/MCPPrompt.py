@@ -4,18 +4,15 @@ Note: main class needs to be refactored for pydantic
 
 from typing import Callable
 from inspect import signature
-from MCPLite.messages import PromptDefinition, GetPromptResult, Argument
+from MCPLite.messages import PromptDefinition, GetPromptResult, Argument, PromptMessage
 from MCPLite.messages.Responses import TextContent
 from pydantic import BaseModel, Field
 from typing import Literal
 
+from MCPLite.logs.logging_config import get_logger
 
-# Some basic types required for Prompts
-class PromptMessage(BaseModel):
-    """Base class for all prompt messages."""
-
-    role: Literal["user", "assistant"]
-    content: TextContent
+# Get logger with this module's name
+logger = get_logger(__name__)
 
 
 # Tool class

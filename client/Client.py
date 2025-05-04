@@ -9,7 +9,6 @@ from MCPLite.messages import (
     ListResourcesResult,
     ListResourcesRequest,
     JSONRPCResponse,
-    JSONRPCRequest,
     MCPResult,
     minimal_client_initialization,
 )
@@ -96,18 +95,20 @@ class Client:
         # Convert to JSON.
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
-        print("Client sending JSON-RPC request through transport")
+        logger.info("Client sending JSON-RPC request through transport")
         json_response = self.transport.send_json(json_str)  # type: ignore
-        print(f"Client received JSON-RPC response from transport: {json_response}")
+        logger.info(
+            f"Client received JSON-RPC response from transport: {json_response}"
+        )
         json_obj = json.loads(json_response)
         try:
-            print(f"Client parsing JSON-RPC response: {json_obj}")
+            logger.info(f"Client parsing JSON-RPC response: {json_obj}")
             jsonrpc_response = JSONRPCResponse(**json_obj)
-            print(
+            logger.info(
                 f"Client converting JSON-RPC response to MCPResult object: {jsonrpc_response}"
             )
             mcp_result = jsonrpc_response.from_json_rpc()
-            print(
+            logger.info(
                 f"Client converted JSON-RPC response to MCPResult object: {mcp_result}"
             )
             return mcp_result

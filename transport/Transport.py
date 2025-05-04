@@ -2,6 +2,11 @@ from typing import Callable
 from abc import ABC, abstractmethod
 from pydantic import Json
 
+from MCPLite.logs.logging_config import get_logger
+
+# Get logger with this module's name
+logger = get_logger(__name__)
+
 
 class Transport(ABC):
 
@@ -21,9 +26,9 @@ class DirectTransport(Transport):
 
     def send_json(self, json_string: str) -> Json:
         # Directly send the JSON string
-        print(f"Sending JSON from transport to server: {json_string}")
+        logger.info(f"Sending JSON from transport to server: {json_string}")
         json_response = self.server_function(json_string)
-        print(
+        logger.info(
             f"Transport received JSON response from server: {json_response}; returning to client."
         )
         return json_response

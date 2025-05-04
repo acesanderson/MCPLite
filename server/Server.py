@@ -6,7 +6,6 @@ This is the server class that will handle incoming requests and route them to th
 from pydantic import Json
 from typing import Optional
 from MCPLite.messages import (
-    MCPMessage,
     MCPRequest,
     JSONRPCRequest,
     MCPResult,
@@ -16,6 +15,11 @@ from MCPLite.primitives import ServerRegistry
 from MCPLite.transport.Transport import Transport
 from MCPLite.routes.ServerRoutes import ServerRoute
 import json
+
+from MCPLite.logs.logging_config import get_logger
+
+# Get logger with this module's name
+logger = get_logger(__name__)
 
 
 class Server:
@@ -42,7 +46,7 @@ class Server:
         """
         # Validate the JSON against our pydantic objects.
         # Process the request and return a response.
-        print(f"Server received JSON: {json_str}")
+        logger.info(f"Server received JSON: {json_str}")
         json_obj = json.loads(json_str)
         if "method" in json_obj:
             # This is a JSON-RPC request.
@@ -54,14 +58,14 @@ class Server:
             # Process the request.
             json_rpc_request = JSONRPCRequest(**json_obj)
             mcp_request = json_rpc_request.from_json_rpc()
-            print(f"Routing request: {mcp_request}")
+            logger.info(f"Routing request: {mcp_request}")
             response: MCPResult = self.route_request(mcp_request)
             # Convert the response to JSON-RPC format.
             # TBD: Implement actual indexing.
             json_rpc_response = JSONRPCResponse(
                 id="blah", jsonrpc="2.0", result=response.model_dump()
             )
-            print(f"Server sending JSON-RPC response: {json_rpc_response}")
+            logger.info(f"Server sending JSON-RPC response: {json_rpc_response}")
             return json_rpc_response.model_dump_json()
 
     def route_request(self, request: MCPRequest) -> MCPResult:

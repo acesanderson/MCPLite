@@ -5,6 +5,11 @@ from MCPLite.messages.Definitions import ToolDefinition
 from MCPLite.messages.Responses import TextContent
 from pydantic import BaseModel, Field
 
+from MCPLite.logs.logging_config import get_logger
+
+# Get logger with this module's name
+logger = get_logger(__name__)
+
 
 # Tool class
 class MCPTool(BaseModel):

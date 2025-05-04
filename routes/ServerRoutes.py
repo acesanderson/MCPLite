@@ -22,6 +22,11 @@ from MCPLite.messages.Definitions import ToolDefinition
 from MCPLite.primitives import ServerRegistry
 from pydantic import ValidationError
 
+from MCPLite.logs.logging_config import get_logger
+
+# Get logger with this module's name
+logger = get_logger(__name__)
+
 
 class ServerRoute:
 
@@ -36,7 +41,7 @@ class ServerRoute:
         Returns:
             MCPMessage: The response to the request.
         """
-        print(f"Routing request: {request}")
+        logger.info(f"Routing request: {request}")
         # Check if the request is a notification or a request.
         if str(request.method) in self.routes:
             return self.routes[str(request.method)](self, request)
@@ -66,7 +71,7 @@ class ServerRoute:
         Returns:
             GetPromptResult: The result containing the prompt.
         """
-        print(f"Routed to prompts_get route: {request}")
+        logger.info(f"Routed to prompts_get route: {request}")
         try:
             prompt_name = request.params.name
         except AttributeError:
@@ -80,14 +85,14 @@ class ServerRoute:
                 request_dict = request.model_dump()
                 # Call the tool with the provided arguments
                 # TBD: we also have ImageContent and EmbeddedResource besides TextContent; implement later.
-                print(
+                logger.info(
                     f"Getting prompt: {prompt_name} with arguments: {request_dict['params']['arguments']}"
                 )
                 prompt_response: GetPromptResult = prompt(
                     **request_dict["params"]["arguments"]
                 )
                 messages = prompt_response
-                print(
+                logger.info(
                     f"Returning prompt response: GetPromptResult + messages: {messages}"
                 )
                 return GetPromptResult(
@@ -104,11 +109,13 @@ class ServerRoute:
         Returns:
             ListPromptsResult: The result containing the list of prompts.
         """
+        logger.info(f"Routed to prompts_list route: {request}")
         if len(self.registry.prompts) == 0:
             raise ValueError("No prompts found in registry.")
         prompt_list: list[PromptDefinition] = [
             prompt.definition for prompt in self.registry.prompts
         ]
+        logger.info(f"Returning prompt list: {prompt_list}")
         return ListPromptsResult(_meta=None, prompts=prompt_list, nextCursor=None)
 
     def resources_list(self, request: ListResourcesRequest) -> ListResourcesResult:
@@ -119,11 +126,13 @@ class ServerRoute:
         Returns:
             ListResourcesResult: The result containing the list of resources.
         """
+        logger.info(f"Routed to resources_list route: {request}")
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
         resource_list: list[ResourceDefinition] = [
             resource.definition for resource in self.registry.resources
         ]
+        logger.info(f"Returning resource list: {resource_list}")
         return ListResourcesResult(_meta=None, resources=resource_list)
 
     def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult | None:
@@ -134,7 +143,7 @@ class ServerRoute:
         Returns:
             tuple[str, ResourceResponse]: The ID and the resource response.
         """
-
+        logger.info(f"Routed to resources_read route: {request}")
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
         if request.params.uri not in [
@@ -144,6 +153,7 @@ class ServerRoute:
         for resource in self.registry.resources:
             if resource.uri == request.params.uri:
                 try:
+                    logger.info("Reading resource: {resource.uri}")
                     resource_data = resource()
                     contents = TextResourceContents(
                         uri=resource.uri, text=resource_data, mimeType="text/plain"
@@ -151,6 +161,7 @@ class ServerRoute:
                     resource_content = ResourceContents(
                         uri=resource.uri, contents=contents
                     )
+                    logger.info(f"Returning resource content: {resource_content}")
                     return ReadResourceResult(_meta=None, resource=resource_content)
                 except ValidationError as e:
                     raise ValueError(f"Error reading resource {resource.uri}: {e}")
@@ -178,7 +189,7 @@ class ServerRoute:
         Returns:
             tuple[str, CallToolResult]: The ID and the tool response.
         """
-        print(f"Routed to tools_call route: {request}")
+        logger.info(f"Routed to tools_call route: {request}")
         try:
             tool_name = request.params.name
         except AttributeError:
@@ -192,12 +203,14 @@ class ServerRoute:
                 request_dict = request.model_dump()
                 # Call the tool with the provided arguments
                 # TBD: we also have ImageContent and EmbeddedResource besides TextContent; implement later.
-                print(
+                logger.info(
                     f"Calling tool: {tool_name} with arguments: {request_dict['params']['arguments']}"
                 )
                 tool_response: TextContent = tool(**request_dict["params"]["arguments"])
                 content = [tool_response]
-                print(f"Returning tool response: CallToolResult + content: {content}")
+                logger.info(
+                    f"Returning tool response: CallToolResult + content: {content}"
+                )
                 return CallToolResult(
                     _meta=None,
                     content=content,
@@ -212,11 +225,13 @@ class ServerRoute:
         Returns:
             ListToolsResult: The result containing the list of tools.
         """
+        logger.info(f"Routed to tools_list route: {request}")
         if len(self.registry.tools) == 0:
             raise ValueError("No tools found in registry.")
         tool_list: list[ToolDefinition] = [
             tool.definition for tool in self.registry.tools
         ]
+        logger.info(f"Returning tool list: {tool_list}")
         return ListToolsResult(_meta=None, tools=tool_list)
 
     routes = {

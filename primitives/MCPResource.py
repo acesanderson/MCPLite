@@ -4,6 +4,12 @@ import re
 from MCPLite.messages.Definitions import ResourceDefinition
 from pydantic import BaseModel, Field
 
+from MCPLite.logs.logging_config import get_logger
+
+# Get logger with this module's name
+logger = get_logger(__name__)
+
+
 uri_regex = r"^[a-zA-Z][a-zA-Z\d+\-.]*://[^\s/$.?#].[^\s]*"
 
 
