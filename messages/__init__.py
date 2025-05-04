@@ -24,6 +24,11 @@ from MCPLite.messages.Responses import (
     InitializeResult,
     minimal_server_initialization,
 )
+from MCPLite.messages.Definitions import (
+    PromptDefinition,
+    ToolDefinition,
+    ResourceDefinition,
+)
 from MCPLite.messages.init.Initialized import InitializedNotification
 
 __all__ = [
@@ -51,4 +56,7 @@ __all__ = [
     "minimal_client_initialization",
     "InitializeResult",
     "minimal_server_initialization",
+    "PromptDefinition",
+    "ToolDefinition",
+    "ResourceDefinition",
 ]

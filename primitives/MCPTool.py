@@ -100,16 +100,6 @@ class MCPTool(BaseModel):
         )
         return tool_definition
 
-    def request(self, tool_request_json: str) -> str:
-        """
-        This is where all the tool queries are processed.
-        Will throw a ValidationError if the json is not valid.
-        """
-        # Validate the json against the ToolRequest schema
-        tool_request = ToolRequest.model_validate_json(tool_request_json)
-
-        pass
-
     def __repr__(self):
         """Return a string representation of this tool."""
         params_str = json.dumps(self.input_schema)

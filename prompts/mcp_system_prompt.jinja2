@@ -31,20 +31,11 @@ RESOURCES - Sources of information you can access
      }
      ```
 
-PROMPTS - Pre-defined templates for specific interactions
-   - Use prompts when you need to follow a standardized format for a particular task
-   - Prompts require user selection and cannot be automatically invoked
-   - To use a prompt, use the format:
-     ```
-     {
-       "method": "prompts/get",
-       "name": "prompt_name",
-       "arguments": {
-         "arg1": "value1",
-         "arg2": "value2"
-       }
-     }
-     ```
+PROMPTS - Pre-defined templates that users can select for specific interactions
+   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you (the AI)
+   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant
+   - Users will select prompts through the interface, not through your suggestions 
+   - If available prompts are listed, you can explain their purpose if asked
 
 When you need to use any capability:
 1. First determine whether you need a Tool, Resource, or Prompt

@@ -14,11 +14,13 @@ logger = configure_logging(
 )
 
 # Rest of your application code
+from jinja2 import Template
 from MCPLite.mcplite.mcplite import MCPLite
 from MCPLite.transport.Transport import Transport, DirectTransport
 from MCPLite.server.Server import Server
 from MCPLite.host.Host import Host
 from MCPLite.client.Client import Client
+from MCPLite.main.example_prompt import partner_prompt
 
 # Set up our Server
 logger.info("Initializing MCPLite application")
@@ -39,6 +41,13 @@ def add(a: int, b: int) -> int:
     Add two numbers.
     """
     return a + b
+
+
+@mcp.prompt
+def partner(topic: str):
+    prompt_template = Template(partner_prompt)
+    prompt_string = prompt_template.render({"topic": topic})
+    return prompt_string
 
 
 # Create our client

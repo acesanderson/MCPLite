@@ -4,85 +4,138 @@ Note: main class needs to be refactored for pydantic
 
 from typing import Callable
 from inspect import signature
-from MCPLite.messages.Definitions import PromptDefinition
+from MCPLite.messages import PromptDefinition, GetPromptResult
+from MCPLite.messages.Responses import TextContent
+from pydantic import BaseModel, Field
 import json
-from pydantic import BaseModel
+from typing import Literal
+
+
+# Some basic types required for Prompts
+class Argument(BaseModel):
+    name: str
+    description: str
+    required: bool
+
+
+class PromptMessage(BaseModel):
+    """Base class for all prompt messages."""
+
+    role: Literal["user", "assistant"]
+    content: TextContent
 
 
 # Tool class
 class MCPPrompt(BaseModel):
     """
-    Resources are parameterless functions that return a static resource (typically a string but could be anything that an LLM would interpret).
-
-    Example usage:
-
-    ```python
-    @mcp.tool
-    def my_tool(param1: str, param2: int):
-        "" This is a tool that returns an answer. ""
-        return param1 + str(param2)
-    ```
-    name = my_tool (the function name)
-    description = "This is a tool that returns a string." (the docstring)
+    TBD: allow user to set descriptions for the arguments through the doc string or by parameter within the decorator.
+    For example this FastMCP implementation:
+        @mcp.prompt(
+        arguments=[
+            {"name": "code", "description": "The source code to analyze", "required": True},
+            {"name": "language", "description": "The programming language of the code", "required": False}
+        ]
+    )
     """
 
-    def __init__(self, function: Callable):
-        self.function = function
-        try:
-            self.description = function.__doc__.strip()  # type: ignore
-        except AttributeError:
-            print("Function needs a docstring")
-        self.input_schema = self.get_input_schema()
-        self.name = function.__name__
+    function: Callable
+    description: str = Field(default="")
+    name: str = Field(default="")
+    arguments: list[Argument] = Field(default=[])
 
-    def get_input_schema(self):
+    def model_post_init(self, __context) -> None:
+        """
+        This method is called after the model is created.
+        It sets the name and description of the tool.
+        """
+        self.name = self._get_name()
+        self.description = self._get_description()
+        self.arguments = self._get_arguments()
+
+    def _get_name(self) -> str:
+        try:
+            return self.function.__name__
+        except AttributeError:
+            raise ValueError("Function needs a name, did you just slip me a lambdas?")
+
+    def _get_description(self) -> str:
+        try:
+            return self.function.__doc__.strip()  # type: ignore
+        except AttributeError:
+            raise ValueError("Function needs a docstring.")
+
+    def _get_arguments(self):
+        """
+        Build a list of Argument objects.
+        TBD: allow for parameter descriptions.
+        """
         sig = signature(self.function)
         params = sig.parameters
-        input_schema = {
-            name: param.annotation.__name__ for name, param in params.items()
-        }
-        if "_empty" in input_schema.values():
-            raise ValueError("Function parameters must have type annotations.")
-        return input_schema
+        arguments = []
+        for name, param in params.items():
+            # A parameter is required if it doesn't have a default value
+            # PARAMETER_EMPTY is used to indicate no default value
+            required = param.default == param.empty
+            # Create an Argument object
+            arg = Argument(
+                name=name,
+                description="",  # Empty description as mentioned
+                required=required,
+            )
+            arguments.append(arg)
+        return arguments
 
-    def __call__(self, **kwargs):
-        return self.function(**kwargs)
-
-    def to_dict(self):
+    def __call__(self, **kwargs) -> GetPromptResult:
         """
-        Return a dictionary representation of this tool for MCP compatibility.
-        Per MCP spec, the tool should be represented as:
-        {
-          "name": "analyze_data",
-          "description": "Template for analyzing data files",
-          "arguments": [
-            {
-              "name": "file_path",
-              "description": "Path to the data file",
-              "required": true
-            },
-            {
-              "name": "analysis_type",
-              "description": "Type of analysis to perform",
-              "required": false
-            }
-          ]
-        }
-        """
-        return {
-            "name": self.name,
-            "description": self.description,
-            "inputSchema": {
-                "type": "object",
-                "properties": self.input_schema,
-            },
-        }
+        class PromptMessage(BaseModel):
+            role: Role
+            content: list[Union[TextContent, ImageContent, EmbeddedResource]]
 
-    def to_json(self):
-        """Return a JSON representation of this tool for MCP compatibility."""
-        return json.dumps(self.to_dict(), indent=2)
+        class GetPromptResult(MCPResult):
+            messages: list[PromptMessage]  # Changed from Any for type safety
+            description: Optional[str] = None  # Changed from PromptMessage
+        """
+        # Prompt functions either return a list of Message or a single string
+        function_output: str | list[PromptMessage] = self.function(**kwargs)
+        # Detect if single string
+        if isinstance(function_output, str):
+            function_output = [
+                PromptMessage(
+                    role="user", content=TextContent(type="text", text=function_output)
+                )
+            ]
+            return GetPromptResult(
+                _meta=None, description=self.description, messages=function_output  # type: ignore
+            )
+        elif isinstance(function_output, list):
+            return GetPromptResult(
+                _meta=None, description=self.description, messages=function_output  # type: ignore
+            )
+        else:
+            raise ValueError(
+                "Prompt function output is neither str nor list[PromptMessage]."
+            )
+
+    @property
+    def definition(self) -> PromptDefinition:
+        """
+        class PromptDefinition(Definition):
+            class Argument(BaseModel):
+                name: str
+                description: str
+                required: bool
+
+            name: str
+            description: str
+            arguments: list[Argument]
+        """
+        return PromptDefinition(
+            name=self.name,
+            description=self.description,
+            arguments=self.arguments,  # type: ignore
+        )
 
     def __repr__(self):
-        """Return a string representation of this tool."""
-        params_str = json.dumps(self.input_schema)
-        return f"<Tool: {self.name}, Description: {self.description}, Parameters: {params_str}>"
+        """Return a string representation of this prompt."""
+        args_str = json.dumps(self.arguments)
+        return f"<Tool: {self.name}, Description: {self.description}, Parameters: {args_str}>"
