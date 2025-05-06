@@ -17,8 +17,6 @@ logger = configure_logging(
 # Rest of your application code
 from jinja2 import Template
 from MCPLite.mcplite.mcplite import MCPLite
-from MCPLite.transport.Transport import Transport, DirectTransport
-from MCPLite.server.Server import Server
 from MCPLite.host.Host import Host
 from MCPLite.client.Client import Client
 from MCPLite.main.example_prompt import partner_prompt
@@ -62,4 +60,4 @@ client.initialize()
 # Set up our Host
 host = Host(model="gpt")
 host.add_client(client)
-host.run_prompt(prompt_name="partner", topic="AI Safety")
+host.run_prompt(prompt_name="partner", topic="Business Intelligence")

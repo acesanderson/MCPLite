@@ -6,6 +6,7 @@ from typing import Callable
 from inspect import signature
 from MCPLite.messages import PromptDefinition, GetPromptResult, Argument, PromptMessage
 from MCPLite.messages.Responses import TextContent
+from MCPLite.primitives.Primitive import Primitive
 from pydantic import BaseModel, Field
 from typing import Literal
 
@@ -16,7 +17,7 @@ logger = get_logger(__name__)
 
 
 # Tool class
-class MCPPrompt(BaseModel):
+class MCPPrompt(Primitive):
     """
     TBD: allow user to set descriptions for the arguments through the doc string or by parameter within the decorator.
     For example this FastMCP implementation:

@@ -3,6 +3,7 @@ from inspect import signature
 import json
 from MCPLite.messages.Definitions import ToolDefinition
 from MCPLite.messages.Responses import TextContent
+from MCPLite.primitives.Primitive import Primitive
 from pydantic import BaseModel, Field
 
 from MCPLite.logs.logging_config import get_logger
@@ -12,7 +13,7 @@ logger = get_logger(__name__)
 
 
 # Tool class
-class MCPTool(BaseModel):
+class MCPTool(Primitive):
     """
     Tools are parameterized functions that return a dynamic resource (typically a string but could be anything that an LLM would interpret).
 

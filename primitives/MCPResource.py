@@ -2,6 +2,7 @@ from typing import Callable
 import json
 import re
 from MCPLite.messages.Definitions import ResourceDefinition
+from MCPLite.primitives.Primitive import Primitive
 from pydantic import BaseModel, Field
 
 from MCPLite.logs.logging_config import get_logger
@@ -26,7 +27,7 @@ def get_string_size_in_bytes(content):
 
 
 # Tool class
-class MCPResource(BaseModel):
+class MCPResource(Primitive):
     """
     Resources are parameterless functions that return a static resource (typically a string but could be anything that an LLM would interpret).
     You need to pass the function, a URI, and optionally a mimeType and size.
@@ -95,10 +96,6 @@ class MCPResource(BaseModel):
             mimeType=self.mimeType,
             size=self.size,
         )
-
-    def to_json(self):
-        """Return a JSON representation of this resource for MCP compatibility."""
-        return json.dumps(self.to_dict(), indent=2)
 
     def __call__(self, **kwargs):
         return self.function(**kwargs)
