@@ -136,6 +136,19 @@ class ReadResourceRequest(MCPRequest):
     params: ReadResourceRequestParams
 
 
+# Resource Templates
+## Resource Templates have a special list Request and Result, but ReadResource is used for both these and the regular resources.
+class ListResourceTemplatesRequest(MCPRequest):
+    """
+    Sent from the client to request a list of resource templates the server has.
+    """
+
+    method: Method = Method("resources/templates/list")
+    params: Optional[dict[str, Any]] = Field(
+        default_factory=dict, description="Optional parameters for filtering the list"
+    )
+
+
 # Prompts
 
 
@@ -298,6 +311,7 @@ MCPRequests = [
     GetPromptRequest,
     ReadResourceRequest,
     ListResourcesRequest,
+    ListResourceTemplatesRequest,
     ListPromptsRequest,
     ListToolsRequest,
     InitializeRequest,
@@ -328,7 +342,7 @@ method_map = {
     "resources/list": ListResourcesRequest,
     "resources/read": ReadResourceRequest,
     "resources/subscribe": None,
-    "resources/templates/list": None,
+    "resources/templates/list": ListResourceTemplatesRequest,
     "resources/unsubscribe": None,
     "roots/list": None,
     "sampling/createMessage": None,

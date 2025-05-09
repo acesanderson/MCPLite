@@ -4,8 +4,10 @@ Some higher level classes --
 - Transport: our transport layer, with subclasses for http, sse, stdio
 """
 
+from pydantic import BaseModel
 
-class Primitive:
+
+class Primitive(BaseModel):
     """
     Base class for Tool, Resource, and Prompt.
     Handles basic json input and output.

@@ -8,6 +8,8 @@ from MCPLite.messages import (
     ListToolsResult,
     ListResourcesResult,
     ListResourcesRequest,
+    ListResourceTemplatesRequest,
+    ListResourceTemplatesResult,
     JSONRPCResponse,
     MCPResult,
     minimal_client_initialization,
@@ -62,20 +64,29 @@ class Client:
         # prompts = self.send_request(ListPromptsRequest())
         # self.registry.prompts = prompts
         if capabilities.resources:
+            # Resources have two parts: templates and resources. First, resources:
             logger.info("Client sending ListResourcesRequest")
             list_resources_request = ListResourcesRequest()
             list_resources_result: ListResourcesResult = self.send_request(  # type: ignore
                 list_resources_request
             )
             logger.info("Client received ListResourcesResult")
-            self.registry.resources = list_resources_result.resources
+            self.registry.resources += list_resources_result.resources
             logger.info("Client updated registry with resources")
+            # Now, templates:
+            logger.info("Client sending ListResourcesTemplateRequest")
+            list_resource_templates_request = ListResourceTemplatesRequest()
+            list_resources_templates_result: ListResourceTemplatesResult = (  # type: ignore
+                self.send_request(list_resource_templates_request)
+            )
+            logger.info("Client received ListResourcesTemplateResult")
+            self.registry.resources += list_resources_templates_result.resourceTemplates
         if capabilities.tools:
             logger.info("Client sending ListToolsRequest")
             list_tools_request = ListToolsRequest()
             list_tools_results: ListToolsResult = self.send_request(list_tools_request)  # type: ignore
             logger.info("Client received ListResourcesResult")
-            self.registry.tools = list_tools_results.tools
+            self.registry.tools += list_tools_results.tools
             logger.info("Client updated registry with resources")
         if capabilities.prompts:
             logger.info("Client sending ListPromptsRequest")
@@ -84,7 +95,7 @@ class Client:
                 list_prompts_request
             )
             logger.info("Client received ListPromptsResult")
-            self.registry.prompts = list_prompts_result.prompts
+            self.registry.prompts += list_prompts_result.prompts
             logger.info("Client updated registry with prompts")
 
     def send_request(self, request: MCPRequest) -> MCPResult:

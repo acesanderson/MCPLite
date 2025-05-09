@@ -1,11 +1,13 @@
 """
-This captures most rsponses, however note that there are Response types in the initialization for example that import from this script.
+Response classes for the Model Context Protocol (MCP).
+These are structured differently than Responses; the core class is actually Result, which a Response wraps.
 """
 
 from MCPLite.messages.MCPMessage import MCPMessage
 from MCPLite.messages.Requests import Implementation
 from MCPLite.messages.Definitions import (
     ResourceDefinition,
+    ResourceTemplateDefinition,
     PromptDefinition,
     ToolDefinition,
 )
@@ -61,8 +63,8 @@ class JSONRPCResponse(MCPMessage):
             elif "resources" in result_data:
                 return ListResourcesResult(**result_data)
 
-            # elif "resourceTemplates" in result_data:
-            #     return ListResourceTemplatesResult(**result_data)
+            elif "resourceTemplates" in result_data:
+                return ListResourceTemplatesResult(**result_data)
 
             elif "prompts" in result_data:
                 return ListPromptsResult(**result_data)
@@ -77,12 +79,6 @@ class JSONRPCResponse(MCPMessage):
                 key in result_data for key in ["isError"]
             ):
                 return CallToolResult(**result_data)
-
-            # elif "completion" in result_data:
-            #     return CompleteResult(**result_data)
-
-            # elif "roots" in result_data:
-            #     return ListRootsResult(**result_data)
 
         raise ValueError(
             f"Unknown result type: {result_data}. Please check the MCP protocol for updates."
@@ -202,6 +198,18 @@ class ListResourcesResult(MCPResult):
 
     resources: list[ResourceDefinition]
     nextCursor: Optional[str] = None
+
+
+class ListResourceTemplatesResult(MCPResult):
+    """Response containing the list of available resource templates."""
+
+    resourceTemplates: list[ResourceTemplateDefinition] = Field(
+        default_factory=list, description="List of available resource templates"
+    )
+
+    meta: Optional[dict[str, Any]] = Field(
+        default=None, alias="_meta", description="Optional metadata for the response"
+    )
 
 
 class ResourceContents(BaseModel):
@@ -334,5 +342,6 @@ MCPResults = [
     ReadResourceResult,
     ListPromptsResult,
     ListResourcesResult,
+    ListResourceTemplatesResult,
     ListToolsResult,
 ]

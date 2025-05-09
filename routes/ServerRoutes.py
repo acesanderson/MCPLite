@@ -19,7 +19,7 @@ from MCPLite.messages.Responses import (
     minimal_server_initialization,
 )
 from MCPLite.messages.Definitions import ToolDefinition
-from MCPLite.primitives import ServerRegistry
+from MCPLite.primitives import ServerRegistry, MCPResource, MCPResourceTemplate
 from pydantic import ValidationError
 
 from MCPLite.logs.logging_config import get_logger
@@ -127,15 +127,47 @@ class ServerRoute:
         logger.info(f"Routed to resources_list route: {request}")
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
-        resource_list: list[ResourceDefinition] = [
-            resource.definition for resource in self.registry.resources
+        if not any(
+            [
+                isinstance(resource, MCPResource)
+                for resource in self.registry.resources
+            ]
+        ):
+            raise ValueError("No resources found in registry.")
+         resource_list: list[ResourceDefinition] = [
+            resource.definition
+            for resource in self.registry.resources
+            if isinstance(resource, MCPResource)
         ]
         logger.info(f"Returning resource list: {resource_list}")
         return ListResourcesResult(_meta=None, resources=resource_list)
 
+    def resources_templates_list(self, request) -> ListResourceTemplatesResult:
+        """
+        List all resource templates in the registry.
+        """
+        logger.info(f"Routed to resources_templates_list route: {request}")
+        if len(self.registry.resources) == 0:
+            raise ValueError("No resources found in registry.")
+        if not any(
+            [
+                isinstance(resource, MCPResourceTemplate)
+                for resource in self.registry.resources
+            ]
+        ):
+            raise ValueError("No resource templates found in registry.")
+        resource_template_list: list[ResourceTemplateDefinition] = [
+            resource.definition
+            for resource in self.registry.resources
+            if isinstance(resource, MCPResourceTemplate)
+        ]
+        logger.info(f"Returning resource template list: {resource_template_list}")
+        return ListResourceTemplatesResult(_meta=None, resourceTemplates=resource_template_list)
+
+
     def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult | None:
         """
-        Read a resource from the registry.
+        Read a resource from the registry. Note: this handles both resources and templates.
         Args:
             request (ResourceRequest): The request to read the resource.
         Returns:
@@ -165,9 +197,6 @@ class ServerRoute:
                     raise ValueError(f"Error reading resource {resource.uri}: {e}")
 
     def resources_subscribe(self, request) -> None:
-        pass
-
-    def resources_templates_list(self, request) -> None:
         pass
 
     def resources_unsubscribe(self, request) -> None:

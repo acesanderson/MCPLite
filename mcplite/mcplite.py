@@ -13,7 +13,13 @@ Server - The internal class that handles routing requests to the appropriate han
 - Wouldn't be directly exposed to users of your framework
 """
 
-from MCPLite.primitives import MCPTool, MCPResource, MCPPrompt, ServerRegistry
+from MCPLite.primitives import (
+    MCPTool,
+    MCPResource,
+    MCPPrompt,
+    ServerRegistry,
+    MCPResourceTemplate,
+)
 from MCPLite.server.Server import Server
 from MCPLite.transport.Transport import Transport, DirectTransport
 from typing import Callable, Optional
@@ -68,22 +74,44 @@ class MCPLite:
         self, uri: str, mime_type: str = "text/plain", size: int = 1024
     ) -> Callable:
         """
-        Decorator to register a resource.
-        Example usage:
+        Decorator to register a resource or a resource template.
+
+        Example usage for resource:
         ```python
         @mcp.resource(uri="/my-resource", mime_type="text/html")
         def my_resource():
             return "<html>This is my resource.</html>"
         ```
+
+        Example usage for resource template:
+        ```python
+        @mcp.resource(uri="/my-resource/{param}", mime_type="text/html")
+        def my_resource_template(param: str):
+            return f"<html>This is my resource with parameter: {param}</html>"
+        ```
         """
 
-        def decorator(func: Callable) -> Callable:
+        def resource_decorator(func: Callable) -> Callable:
             self.registry.resources.append(
                 MCPResource(function=func, uri=uri, mimeType=mime_type, size=size)
             )
             return func
 
-        return decorator
+        def resource_template_decorator(func: Callable) -> Callable:
+            self.registry.resources.append(
+                MCPResourceTemplate(function=func, uriTemplate=uri)
+            )
+            return func
+
+        # Detect curly braces in the URI; if found, treat it as a resource template
+        if "{" in uri and "}" in uri:
+            # If the URI contains curly braces, treat it as a resource template
+            logger.debug("Detected resource template.")
+            return resource_template_decorator
+        else:
+            # Otherwise, treat it as a regular resource
+            logger.debug("Detected regular resource.")
+            return resource_decorator
 
     def prompt(self, func: Callable) -> Callable:
         """

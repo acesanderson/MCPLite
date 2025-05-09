@@ -2,14 +2,18 @@ from pydantic import BaseModel
 from MCPLite.messages.MCPMessage import MCPMessage
 
 # ClientRegistry holds Definitions. These map to Resource, Tool, Prompt in the official MCP schema.
-from MCPLite.messages.Definitions import (
+from MCPLite.messages import (
     ResourceDefinition,
+    ResourceTemplateDefinition,
     ToolDefinition,
     PromptDefinition,
+    ReadResourceRequest,
+    GetPromptRequest,
+    CallToolRequest,
 )
 
 # ServerRegistry holds MCPResource, MCPTool, and MCPPrompt. These are the actual implementations of the definitions.
-from MCPLite.primitives import MCPTool, MCPResource, MCPPrompt
+from MCPLite.primitives import MCPTool, MCPResource, MCPPrompt, MCPResourceTemplate
 
 
 class ClientRegistry(BaseModel):
@@ -18,7 +22,7 @@ class ClientRegistry(BaseModel):
     Client side this means our MCPMessage objects, which map to MCP schema.
     """
 
-    resources: list[ResourceDefinition] = []
+    resources: list[ResourceDefinition | ResourceTemplateDefinition] = []
     tools: list[ToolDefinition] = []
     prompts: list[PromptDefinition] = []
 
@@ -78,7 +82,7 @@ class ServerRegistry(BaseModel):
     A registry that holds resources, tools, and prompts. SErver side this means our MCPResource, MCPTool, and MCPPrompt objects, which map to MCP schema but also have python function code attached.
     """
 
-    resources: list[MCPResource] = []
+    resources: list[MCPResource | MCPResourceTemplate] = []
     tools: list[MCPTool] = []
     prompts: list[MCPPrompt] = []
 
@@ -111,17 +115,19 @@ class ServerRegistry(BaseModel):
                 f"Cannot add {type(self)} and {type(other)}. Both must be of type ServerRegistry."
             )
 
-    def get(self, name: MCPMessage) -> MCPTool | MCPResource | MCPPrompt | None:
+    def get(
+        self, name: MCPMessage
+    ) -> MCPTool | MCPResource | MCPPrompt | MCPResourceTemplate | None:
         """
         Get a tool, resource, or prompt being requested by an MCPMessage request.
         """
         if isinstance(
-            name, ResourceRequest
+            name, ReadResourceRequest
         ):  # Need to double check schema if you are getting errors.
             return self._get_resource(name.params.name)
-        elif isinstance(name, ToolRequest):
+        elif isinstance(name, CallToolRequest):
             return self._get_tool(name.params.name)
-        elif isinstance(name, PromptRequest):
+        elif isinstance(name, GetPromptRequest):
             return self._get_prompt(name.params.name)
         else:
             raise TypeError(

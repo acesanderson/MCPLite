@@ -8,6 +8,7 @@ from MCPLite.messages.Requests import (
     GetPromptRequestParams,
     ReadResourceRequest,
     ListResourcesRequest,
+    ListResourceTemplatesRequest,
     ListPromptsRequest,
     ListToolsRequest,
     InitializeRequest,
@@ -18,6 +19,7 @@ from MCPLite.messages.Responses import (
     MCPResult,
     JSONRPCResponse,
     ListResourcesResult,
+    ListResourceTemplatesResult,
     ListPromptsResult,
     ListToolsResult,
     CallToolResult,
@@ -31,6 +33,7 @@ from MCPLite.messages.Definitions import (
     PromptDefinition,
     ToolDefinition,
     ResourceDefinition,
+    ResourceTemplateDefinition,
     Argument,
 )
 from MCPLite.messages.init.Initialized import InitializedNotification
@@ -43,6 +46,7 @@ __all__ = [
     "ReadResourceRequest",
     "CallToolRequest",
     "ListResourcesRequest",
+    "ListResourceTemplatesRequest",
     "ListPromptsRequest",
     "ListToolsRequest",
     "MCPResult",
@@ -53,6 +57,7 @@ __all__ = [
     "PromptMessage",
     "ReadResourceResult",
     "ListResourcesResult",
+    "ListResourceTemplatesResult",
     "ListPromptsResult",
     "ListToolsResult",
     "InitializeRequest",
@@ -65,6 +70,7 @@ __all__ = [
     "PromptDefinition",
     "ToolDefinition",
     "ResourceDefinition",
+    "ResourceTemplateDefinition",
     "Argument",
     "Method",
 ]
