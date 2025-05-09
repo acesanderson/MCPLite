@@ -65,6 +65,18 @@ class MCPResourceTemplate(Primitive):
         self.name = self._get_name()
         self.description = self._get_description()
 
+    def match_uri(self, uri: str) -> bool:
+        """
+        Check if the given URI matches the URI template.
+        This is a simple check and does not validate the actual parameters.
+        """
+        # Replace {param} with a regex pattern to match any value
+        pattern = re.sub(r"{[^}]+}", r"[^/]+", self.uriTemplate)
+        # Escape special characters in the URI template
+        pattern = re.escape(pattern).replace(r"\{", "{").replace(r"\}", "}")
+        # Check if the URI matches the pattern
+        return bool(re.match(pattern, uri))
+
     def _validate_uri_template(self, uri_pattern: str):
         """
         Validate the URI template format.

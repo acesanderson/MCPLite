@@ -128,13 +128,10 @@ class ServerRoute:
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
         if not any(
-            [
-                isinstance(resource, MCPResource)
-                for resource in self.registry.resources
-            ]
+            [isinstance(resource, MCPResource) for resource in self.registry.resources]
         ):
             raise ValueError("No resources found in registry.")
-         resource_list: list[ResourceDefinition] = [
+        resource_list: list[ResourceDefinition] = [
             resource.definition
             for resource in self.registry.resources
             if isinstance(resource, MCPResource)
@@ -162,25 +159,35 @@ class ServerRoute:
             if isinstance(resource, MCPResourceTemplate)
         ]
         logger.info(f"Returning resource template list: {resource_template_list}")
-        return ListResourceTemplatesResult(_meta=None, resourceTemplates=resource_template_list)
-
+        return ListResourceTemplatesResult(
+            _meta=None, resourceTemplates=resource_template_list
+        )
 
     def resources_read(self, request: ReadResourceRequest) -> ReadResourceResult | None:
         """
         Read a resource from the registry. Note: this handles both resources and templates.
-        Args:
-            request (ResourceRequest): The request to read the resource.
-        Returns:
-            tuple[str, ResourceResponse]: The ID and the resource response.
+            #
+            Args:
+                request (ResourceRequest): The request to read the resource.
+            Returns:
+                tuple[str, ResourceResponse]: The ID and the resource response.
         """
         logger.info(f"Routed to resources_read route: {request}")
         if len(self.registry.resources) == 0:
             raise ValueError("No resources found in registry.")
-        if request.params.uri not in [
-            resource.uri for resource in self.registry.resources
-        ]:
-            raise ValueError(f"Resource {request.params.uri} not found in registry.")
-        for resource in self.registry.resources:
+        # Differentiate between resources and resource templates
+        resources = [
+            resource
+            for resource in self.registry.resources
+            if isinstance(resource, MCPResource)
+        ]
+        resource_templates = [
+            resource
+            for resource in self.registry.resources
+            if isinstance(resource, MCPResourceTemplate)
+        ]
+        # Now check if the provided URI matches any existing resource
+        for resource in resources:
             if resource.uri == request.params.uri:
                 try:
                     logger.info("Reading resource: {resource.uri}")
@@ -195,6 +202,30 @@ class ServerRoute:
                     return ReadResourceResult(_meta=None, resource=resource_content)
                 except ValidationError as e:
                     raise ValueError(f"Error reading resource {resource.uri}: {e}")
+        # If no resource was found, check if the URI matches any resource template
+        for resource_template in resource_templates:
+            if resource_template.match_uri(request.params.uri):
+                try:
+                    logger.info(
+                        "Reading resource template: {resource_template.uriTemplate}"
+                    )
+                    resource_data = resource_template(param=request.params.uri)
+                    contents = TextResourceContents(
+                        uri=request.params.uri,
+                        text=resource_data,
+                        mimeType="text/plain",
+                    )
+                    resource_content = ResourceContents(
+                        uri=request.params.uri, contents=contents
+                    )
+                    logger.info(
+                        f"Returning resource template content: {resource_content}"
+                    )
+                    return ReadResourceResult(_meta=None, resource=resource_content)
+                except ValidationError as e:
+                    raise ValueError(
+                        f"Error reading resource template {resource_template.uriTemplate}: {e}"
+                    )
 
     def resources_subscribe(self, request) -> None:
         pass

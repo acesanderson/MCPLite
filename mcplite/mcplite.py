@@ -16,9 +16,9 @@ Server - The internal class that handles routing requests to the appropriate han
 from MCPLite.primitives import (
     MCPTool,
     MCPResource,
+    MCPResourceTemplate,
     MCPPrompt,
     ServerRegistry,
-    MCPResourceTemplate,
 )
 from MCPLite.server.Server import Server
 from MCPLite.transport.Transport import Transport, DirectTransport

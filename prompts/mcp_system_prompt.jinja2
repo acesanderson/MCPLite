@@ -31,6 +31,27 @@ RESOURCES - Sources of information you can access
      }
      ```
 
+RESOURCE TEMPLATES - Dynamic resources with parameterized URIs
+   - Resource templates allow accessing resources with variable parts in the URI
+   - Templates use curly braces {} to denote parameters that must be filled
+   - To read a templated resource, substitute the parameters directly into the URI:
+     ```
+     {
+       "method": "resources/read",
+       "params": {
+         "uri": "resource://example/value1/value2"
+       }
+     }
+     ```
+   - Template parameters:
+     - Must be substituted directly into the URI template before making the request
+     - Replace each {parameter} with its actual value
+     - The resulting URI should be a concrete path with no template variables
+   - Examples:
+     - Template: `file://todos/{date}` → Usage: `{"method": "resources/read", "params": {"uri": "file://todos/2025-05-03"}}`
+     - Template: `db://users/{userId}/profile` → Usage: `{"method": "resources/read", "params": {"uri": "db://users/123/profile"}}`
+
+
 PROMPTS - Pre-defined templates that users can select for specific interactions
    - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you (the AI)
    - You should be aware that prompts exist as an MCP capability, but only mention them if relevant
@@ -61,8 +82,14 @@ You have access to the following resources:
 {{resource}}
 {% endfor %}
 {% endif %}
+{% if resource_templates %}
+You have access to the following resource templates:
+{% for template in resource_templates %}
+{{template}}
+{% endfor %}
+{% endif %}
 {% if prompts %}
-You have access to the following prompts:
+The user has access to the following prompts:
 {% for prompt in prompts %}
 {{prompt}}
 {% endfor %}

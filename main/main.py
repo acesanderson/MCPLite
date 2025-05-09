@@ -43,8 +43,12 @@ def todos(date: str) -> str:
     """
     Returns a list of todos for a given date. Requires YYYY-MM-DD format.
     """
-    todo = list(todos_path.glob(f"{date}*.md"))[0]
-    return str(todo)
+    # Extract the date from the URI
+    uri = date.split("/")[-1]
+    # Read the file from the todos_path directory
+    todo = list(todos_path.glob(f"{uri}*.md"))[0]
+    content = todo.read_text()
+    return content
 
 
 @mcp.tool

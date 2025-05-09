@@ -62,7 +62,20 @@ class ClientRegistry(BaseModel):
         Returns a dictionary with keys "resources", "tools", and "prompts", each of these being a list of dicts (i.e. the definitions per MCP schema).
         """
         resources = (
-            [resource.model_dump() for resource in self.resources]
+            [
+                resource.model_dump()
+                for resource in self.resources
+                if isinstance(resource, ResourceDefinition)
+            ]
+            if self.resources
+            else []
+        )
+        resource_templates = (
+            [
+                resource.model_dump()
+                for resource in self.resources
+                if isinstance(resource, ResourceTemplateDefinition)
+            ]
             if self.resources
             else []
         )
@@ -72,6 +85,7 @@ class ClientRegistry(BaseModel):
         )
         return {
             "resources": resources,
+            "resource_templates": resource_templates,
             "tools": tools,
             "prompts": prompts,
         }
