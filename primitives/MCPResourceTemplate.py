@@ -33,13 +33,12 @@ class MCPResourceTemplate(Primitive):
     ResourceTemplates are parameterized functions that return dynamic resources based on provided parameters.
     You need to pass the function, a URI pattern, and optionally a mimeType and size.
     The function must be named, have a docstring, and define parameters, or this will throw an error.
+    Currently you need to have only one parameter.
 
     Example usage:
 
     ```python
-    resource_template_registry = ResourceTemplateRegistry()
-    @resource_template_registry.register("http://example.com/resource/{param}", "text/plain", 1024)
-
+    @mcplite.resource(uri="http://example.com/resource/{param}")
     def my_resource_template(param: str):
         # This is a resource template that returns a string based on the param.
         return f"This is my resource with parameter: {param}"
