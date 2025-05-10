@@ -1,7 +1,8 @@
-from MCPLite.messages.Requests import MCPRequest
 from MCPLite.messages import (
+    MCPRequest,
     InitializeRequest,
     InitializeResult,
+    InitializedNotification,
     ListPromptsRequest,
     ListPromptsResult,
     ListToolsRequest,
@@ -13,6 +14,7 @@ from MCPLite.messages import (
     JSONRPCResponse,
     MCPResult,
     minimal_client_initialization,
+    MCPNotification,
 )
 from MCPLite.logs.logging_config import get_logger
 from MCPLite.primitives.MCPRegistry import ClientRegistry
@@ -97,6 +99,10 @@ class Client:
             logger.info("Client received ListPromptsResult")
             self.registry.prompts += list_prompts_result.prompts
             logger.info("Client updated registry with prompts")
+        # Send a notification to the server that the client is initialized.
+        initialized_notification = InitializedNotification()
+        logger.info("Client sending InitializedNotification")
+        self.send_notification(initialized_notification)
 
     def send_request(self, request: MCPRequest) -> MCPResult:
         """
@@ -107,7 +113,7 @@ class Client:
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
         logger.info("Client sending JSON-RPC request through transport")
-        json_response = self.transport.send_json(json_str)  # type: ignore
+        json_response = self.transport.send_json_request(json_str)  # type: ignore
         logger.info(
             f"Client received JSON-RPC response from transport: {json_response}"
         )
@@ -125,4 +131,14 @@ class Client:
             return mcp_result
         except ValueError as e:
             raise ValueError(f"Invalid JSON-RPC response from server: {e}")
-        # Convert JSONRPCResponse to the appropriate MCPResponse.
+
+    def send_notification(self, notification: MCPNotification):
+        """
+        Send a notification to the server.
+        """
+        # Validate pydantic object matches the client/server schema.
+        # Convert to JSON.
+        jsonrpc_notification = notification.to_json_rpc()
+        json_str = jsonrpc_notification.model_dump_json()
+        logger.info("Client sending JSON-RPC notification through transport")
+        self.transport.send_json_notification(json_str)  # type: ignore

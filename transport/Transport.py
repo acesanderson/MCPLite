@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 class Transport(ABC):
 
     @abstractmethod
-    def send_json(self, json_string: str) -> Json:
+    def send_json_request(self, json_string: str) -> Json:
         pass
 
 
@@ -24,14 +24,20 @@ class DirectTransport(Transport):
     def __init__(self, server_function: Callable):
         self.server_function = server_function
 
-    def send_json(self, json_string: str) -> Json:
-        # Directly send the JSON string
+    def send_json_request(self, json_string: str) -> Json:
+        # Directly send the JSON string, returning the response
         logger.info(f"Sending JSON from transport to server: {json_string}")
         json_response = self.server_function(json_string)
         logger.info(
             f"Transport received JSON response from server: {json_response}; returning to client."
         )
         return json_response
+
+    def send_json_notification(self, json_string: str) -> None:
+        # Directly send the JSON string
+        logger.info(f"Sending JSON from transport to server: {json_string}")
+        self.server_function(json_string)
+        logger.info(f"Transport sent JSON notification to server: {json_string}")
 
 
 # class ClientTransport(BaseTransport):

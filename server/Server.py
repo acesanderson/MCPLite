@@ -10,6 +10,8 @@ from MCPLite.messages import (
     JSONRPCRequest,
     MCPResult,
     JSONRPCResponse,
+    MCPNotification,
+    JSONRPCNotification,
 )
 from MCPLite.primitives import ServerRegistry
 from MCPLite.transport.Transport import Transport
@@ -51,22 +53,34 @@ class Server:
         if "method" in json_obj:
             # This is a JSON-RPC request.
             # Validate the request.
-            if not JSONRPCRequest.model_validate(json_obj):
-                raise ValueError(
-                    "Invalid JSON-RPC request, despite presence of 'method' key."
-                )
-            # Process the request.
-            json_rpc_request = JSONRPCRequest(**json_obj)
-            mcp_request = json_rpc_request.from_json_rpc()
-            logger.info(f"Routing request: {mcp_request}")
-            response: MCPResult = self.route_request(mcp_request)
-            # Convert the response to JSON-RPC format.
-            # TBD: Implement actual indexing.
-            json_rpc_response = JSONRPCResponse(
-                id="blah", jsonrpc="2.0", result=response.model_dump()
-            )
-            logger.info(f"Server sending JSON-RPC response: {json_rpc_response}")
-            return json_rpc_response.model_dump_json()
+            if JSONRPCRequest.model_validate(json_obj):
+                logger.info("Valid JSON-RPC request, processing...")
+                response: Json = self._process_request(json_obj)
+                return response
+            if JSONRPCNotification.model_validate(json_obj):
+                logger.info("Valid JSON-RPC notification, processing...")
+                self._process_notification()
+                return json_obj
+
+    def _process_request(self, json_obj: dict) -> Json:
+        # Process the request.
+        json_rpc_request = JSONRPCRequest(**json_obj)
+        mcp_request = json_rpc_request.from_json_rpc()
+        logger.info(f"Routing request: {mcp_request}")
+        response: MCPResult = self.route_request(mcp_request)
+        # Convert the response to JSON-RPC format.
+        # TBD: Implement actual indexing.
+        json_rpc_response = JSONRPCResponse(
+            id="blah", jsonrpc="2.0", result=response.model_dump()
+        )
+        logger.info(f"Server sending JSON-RPC response: {json_rpc_response}")
+        return json_rpc_response.model_dump_json()
+
+    def _process_notification(self, json_obj: dict) -> None:
+        # Process the notification.
+        json_rpc_notification = JSONRPCNotification(**json_obj)
+        mcp_notification = json_rpc_notification.from_json_rpc()
+        logger.info(f"Routing notification: {mcp_notification}")
 
     def route_request(self, request: MCPRequest) -> MCPResult:
         """

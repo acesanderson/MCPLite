@@ -33,7 +33,7 @@ class ServerRoute:
     def __init__(self, registry: ServerRegistry):
         self.registry = registry
 
-    def __call__(self, request: MCPRequest) -> MCPResult:
+    def __call__(self, message: MCPRequest | MCPNotification) -> MCPResult:
         """
         Call the appropriate route based on the request method.
         Args:
@@ -41,12 +41,12 @@ class ServerRoute:
         Returns:
             MCPMessage: The response to the request.
         """
-        logger.info(f"Routing request: {request}")
+        logger.info(f"Routing request: {message}")
         # Check if the request is a notification or a request.
-        if str(request.method) in self.routes:
-            return self.routes[str(request.method)](self, request)
+        if str(message.method) in self.routes:
+            return self.routes[str(message.method)](self, message)
         else:
-            raise ValueError(f"Invalid method: {request.method}")
+            raise ValueError(f"Invalid method: {message.method}")
 
     def initialize(self, request: InitializeRequest) -> InitializeResult:
         """

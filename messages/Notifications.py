@@ -23,8 +23,6 @@ class NotificationMethod(str, Enum):
 
     # Bidirectional
     CANCELLED = "notifications/cancelled"
-    PING = "notifications/ping"
-    PONG = "notifications/pong"
 
     def __str__(self) -> str:
         return self.value

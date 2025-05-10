@@ -36,7 +36,14 @@ from MCPLite.messages.Definitions import (
     ResourceTemplateDefinition,
     Argument,
 )
-from MCPLite.messages.init.Initialized import InitializedNotification
+from MCPLite.messages.Notifications import (
+    MCPNotification,
+    JSONRPCNotification,
+    InitializedNotification,
+    RootsListChangedNotification,
+    ProgressNotification,
+    LogMessageNotification,
+)
 
 __all__ = [
     "MCPMessage",
@@ -73,4 +80,9 @@ __all__ = [
     "ResourceTemplateDefinition",
     "Argument",
     "Method",
+    "RootsListChangedNotification",
+    "ProgressNotification",
+    "LogMessageNotification",
+    "JSONRPCNotification",
+    "MCPNotification",
 ]
