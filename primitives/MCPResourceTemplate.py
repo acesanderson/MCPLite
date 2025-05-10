@@ -64,18 +64,28 @@ class MCPResourceTemplate(Primitive):
         self.uriTemplate = self._validate_uri_template(self.uriTemplate)
         self.name = self._get_name()
         self.description = self._get_description()
+        self.parameters = self._get_parameters()
 
     def match_uri(self, uri: str) -> bool:
         """
         Check if the given URI matches the URI template.
         This is a simple check and does not validate the actual parameters.
         """
-        # Replace {param} with a regex pattern to match any value
-        pattern = re.sub(r"{[^}]+}", r"[^/]+", self.uriTemplate)
-        # Escape special characters in the URI template
-        pattern = re.escape(pattern).replace(r"\{", "{").replace(r"\}", "}")
-        # Check if the URI matches the pattern
-        return bool(re.match(pattern, uri))
+        # Split the template and URI into parts
+        template_parts = self.uriTemplate.split("/")
+        uri_parts = uri.split("/")
+        # They must have the same number of parts
+        if len(template_parts) != len(uri_parts):
+            return False
+        # Check each part
+        for template_part, uri_part in zip(template_parts, uri_parts):
+            if template_part.startswith("{") and template_part.endswith("}"):
+                # This is a parameter, any value is acceptable
+                continue
+            elif template_part != uri_part:
+                # This is a literal part that must match exactly
+                return False
+        return True
 
     def _validate_uri_template(self, uri_pattern: str):
         """
@@ -156,6 +166,12 @@ class MCPResourceTemplate(Primitive):
         )
 
     def __call__(self, **kwargs):
+        # We need to get the name for our parameter, since it would currently be passed as "param".
+        # TBD: This assumes one single param.
+        parameter_name = self.parameters[0].get("name")
+        # Rename 'param' to the actual parameter name
+        if parameter_name != "param":
+            kwargs[parameter_name] = kwargs.pop("param")
         return self.function(**kwargs)
 
     def __repr__(self):
@@ -166,4 +182,4 @@ class MCPResourceTemplate(Primitive):
                 for p in self.parameters
             ]
         )
-        return f"<ResourceTemplate: {self.name}, Parameters: [{param_str}], Description: {self.description}>"
+        return f"<ResourceTemplate: {self.name}, uriTemplate: {self.uriTemplate}, Description: {self.description}>"

@@ -4044,3 +4044,1466 @@
 [34m  [0m[1;34m}[0m
 [1;34m}[0m
 
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should [0m
+[32mincorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the sheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the sheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. Requires YYYY-MM-DD [0m
+[32mformat.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. Requires YYYY-MM-DD [0m
+[32mformat.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m
+[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m
+[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, [0m
+[32mwhich you should incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m
+[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the [0m
+[32msheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. [0m
+[32mRequires YYYY-MM-DD format.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m
+[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mWhat were my todos for May [0m[1;33m3[0m[33m [0m[1;33m2025[0m[33m?[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"method"[0m[34m: [0m[34m"resources/read"[0m[34m,[0m
+[34m  [0m[34m"params"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────── [0mMessage[1;32m ──────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"meta"[0m[34m: null,[0m
+[34m  [0m[34m"resource"[0m[34m: [0m[1;34m{[0m
+[34m    [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m[34m,[0m
+[34m    [0m[34m"contents"[0m[34m: [0m[1;34m{[0m
+[34m      [0m[34m"text"[0m[34m: [0m[34m"- [0m[34m[[0m[34m [0m[34m][0m[34m Finances\n    - [0m[34m[[0m[34m [0m[34m][0m[34m Set up financial planner appt\n    - [0m[34m[[0m[34m [0m[34m][0m[34m Boston city fees\n    - [0m[34m[[0m[34m [0m[34m][0m[34m [0m
+[34mBudget\n"[0m[34m,[0m
+[34m      [0m[34m"uri"[0m[34m: [0m[34m"file://todos/2025-05-03"[0m[34m,[0m
+[34m      [0m[34m"mimeType"[0m[34m: [0m[34m"text/plain"[0m
+[34m    [0m[1;34m}[0m
+[34m  [0m[1;34m}[0m
+[1;34m}[0m
+
