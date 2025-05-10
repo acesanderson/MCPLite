@@ -18,9 +18,11 @@ from MCPLite.messages.Responses import (
     TextResourceContents,
     minimal_server_initialization,
 )
+from MCPLite.messages.Notifications import InitializedNotification
 from MCPLite.messages.Definitions import ToolDefinition
-from MCPLite.primitives import ServerRegistry, MCPResource, MCPResourceTemplate
+from MCPLite.primitives import MCPResource, MCPResourceTemplate
 from pydantic import ValidationError
+from datetime import datetime
 
 from MCPLite.logs.logging_config import get_logger
 
@@ -30,8 +32,9 @@ logger = get_logger(__name__)
 
 class ServerRoute:
 
-    def __init__(self, registry: ServerRegistry):
-        self.registry = registry
+    def __init__(self, server: "Server"):
+        self.server = server
+        self.registry = self.server.registry
 
     def __call__(self, message: MCPRequest | MCPNotification) -> MCPResult:
         """
@@ -55,6 +58,26 @@ class ServerRoute:
         """
         _ = request
         return minimal_server_initialization()
+
+    def initialized(self, notification: InitializedNotification) -> None:
+        """
+        Handle the initialized notification from the client.
+        """
+        breakpoint()
+        logger.info(f"Received initialized notification - MCP handshake complete")
+        self.server.initialized = True
+        self.server.initialization_time = datetime.now()
+
+        # TBD: Store client info if provided
+        # if hasattr(notification, "params") and notification.params:
+        #     self.server.client_info = notification.params
+
+        logger.info(f"Server fully initialized at {self.server.initialization_time}")
+
+    def _check_initialized(self):
+        """Helper to check if server is initialized"""
+        if not self.server.is_initialized:
+            raise RuntimeError("Server not initialized")
 
     def logging_setLevel(self, request) -> None:
         pass
@@ -295,6 +318,7 @@ class ServerRoute:
     routes = {
         "completion/complete": tools_call,
         "initialize": initialize,
+        "notifications/initialized": initialized,
         "logging/setLevel": logging_setLevel,
         "ping": ping,
         "prompts/get": prompts_get,

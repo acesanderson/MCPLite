@@ -17,6 +17,7 @@ from MCPLite.primitives import ServerRegistry
 from MCPLite.transport.Transport import Transport
 from MCPLite.routes.ServerRoutes import ServerRoute
 import json
+from datetime import datetime
 
 from MCPLite.logs.logging_config import get_logger
 
@@ -29,15 +30,10 @@ class Server:
     def __init__(self, registry: ServerRegistry, transport: Optional[Transport] = None):
         self.registry = registry
         self.transport = transport
-        self.route = ServerRoute(self.registry)
-
-    def initialize(self, json_string: str):
-        """
-        Initialize the server.
-        """
-        # Send the server's registry to the client per MCP handshake.
-        # For MVP, client will just grab the registry from the class :)
-        pass
+        self.route = ServerRoute(self)
+        self.initialized: bool = False
+        self.initialization_time: Optional[float] = None
+        self.client_info: Optional[dict] = None
 
     def process_message(
         self,
@@ -53,21 +49,28 @@ class Server:
         if "method" in json_obj:
             # This is a JSON-RPC request.
             # Validate the request.
-            if JSONRPCRequest.model_validate(json_obj):
-                logger.info("Valid JSON-RPC request, processing...")
-                response: Json = self._process_request(json_obj)
-                return response
-            if JSONRPCNotification.model_validate(json_obj):
-                logger.info("Valid JSON-RPC notification, processing...")
-                self._process_notification()
-                return json_obj
+            try:
+                if JSONRPCRequest.model_validate(json_obj):
+                    logger.info("Valid JSON-RPC request, processing...")
+                    response: Json = self._process_request(json_obj)
+                    return response
+            except:
+                pass
+            try:
+                if JSONRPCNotification.model_validate(json_obj):
+                    logger.info("Valid JSON-RPC notification, processing...")
+                    self._process_notification(json_obj)
+                    return json_obj
+            except:
+                pass
+        raise ValueError("Invalid JSON-RPC request or notification")
 
     def _process_request(self, json_obj: dict) -> Json:
         # Process the request.
         json_rpc_request = JSONRPCRequest(**json_obj)
         mcp_request = json_rpc_request.from_json_rpc()
         logger.info(f"Routing request: {mcp_request}")
-        response: MCPResult = self.route_request(mcp_request)
+        response: MCPResult = self.route(mcp_request)
         # Convert the response to JSON-RPC format.
         # TBD: Implement actual indexing.
         json_rpc_response = JSONRPCResponse(
@@ -81,9 +84,4 @@ class Server:
         json_rpc_notification = JSONRPCNotification(**json_obj)
         mcp_notification = json_rpc_notification.from_json_rpc()
         logger.info(f"Routing notification: {mcp_notification}")
-
-    def route_request(self, request: MCPRequest) -> MCPResult:
-        """
-        Route the request to the appropriate handler.
-        """
-        return self.route(request)
+        self.route(mcp_notification)

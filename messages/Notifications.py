@@ -47,6 +47,13 @@ class JSONRPCNotification(BaseModel):
     method: NotificationMethod
     params: Optional[dict[str, Any]] = Field(None)
 
+    def from_json_rpc(self) -> "MCPNotification":
+        """Convert the JSON-RPC notification to an MCPNotification."""
+        return MCPNotification(
+            method=self.method,
+            params=self.params or {},
+        )
+
 
 class MCPNotification(MCPMessage):
     """Base class for all notifications."""
