@@ -63,7 +63,6 @@ class ServerRoute:
         """
         Handle the initialized notification from the client.
         """
-        breakpoint()
         logger.info(f"Received initialized notification - MCP handshake complete")
         self.server.initialized = True
         self.server.initialization_time = datetime.now()

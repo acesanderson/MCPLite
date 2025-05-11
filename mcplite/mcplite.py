@@ -21,7 +21,7 @@ from MCPLite.primitives import (
     ServerRegistry,
 )
 from MCPLite.server.Server import Server
-from MCPLite.transport.Transport import Transport, DirectTransport
+from MCPLite.transport import Transport, DirectTransport
 from typing import Callable, Optional
 
 from MCPLite.logs.logging_config import get_logger

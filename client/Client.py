@@ -18,7 +18,7 @@ from MCPLite.messages import (
 )
 from MCPLite.logs.logging_config import get_logger
 from MCPLite.primitives.MCPRegistry import ClientRegistry
-from MCPLite.transport.Transport import DirectTransport
+from MCPLite.transport.DirectTransport import DirectTransport
 import json
 from typing import Optional, Callable
 
@@ -113,7 +113,7 @@ class Client:
         jsonrpc_request = request.to_jsonrpc()
         json_str = jsonrpc_request.model_dump_json()
         logger.info("Client sending JSON-RPC request through transport")
-        json_response = self.transport.send_json_request(json_str)  # type: ignore
+        json_response = self.transport.send_json_message(json_str)  # type: ignore
         logger.info(
             f"Client received JSON-RPC response from transport: {json_response}"
         )
@@ -141,4 +141,4 @@ class Client:
         jsonrpc_notification = notification.to_json_rpc()
         json_str = jsonrpc_notification.model_dump_json()
         logger.info("Client sending JSON-RPC notification through transport")
-        self.transport.send_json_notification(json_str)  # type: ignore
+        self.transport.send_json_message(json_str)  # type: ignore

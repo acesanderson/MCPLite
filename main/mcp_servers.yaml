@@ -1,0 +1,5 @@
+servers:
+  weather:
+    command: python weather.py
+    env:
+      API_KEY: xyz

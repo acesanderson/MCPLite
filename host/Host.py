@@ -18,7 +18,7 @@ from MCPLite.messages import (
     PromptMessage,
 )
 from MCPLite.primitives import ClientRegistry, ServerRegistry
-from MCPLite.transport.Transport import DirectTransport
+from MCPLite.transport import DirectTransport
 from MCPLite.server.Server import Server
 from MCPLite.client.Client import Client
 from pathlib import Path

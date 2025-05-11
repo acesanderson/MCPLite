@@ -1,11 +1,11 @@
 - [x] Stand up the framework as Direct Transport (with no actual Transport implementation) -- in other words, you IMPORT the server class into client code to run it.
 - [x] Add an abstracted Transport class
-- [ ] Implement all Message types from json schema
-    - [ ] Notifications
-    - [ ] Error handling (within Response/Request pairs)
-- [ ] Implement HTTP (uvicorn / FastAPI as appropriate)
- - [ ] access across local network
+- [x] Notifications
 - [ ] Implement STDIO
  - [ ] add stdio MCP servers from the internet onto my Host
  - [ ] add MY stdio MCP servers to Claude Desktop
+- [ ] Implement all Message types from json schema
+    - [ ] Error handling (within Response/Request pairs)
+- [ ] Implement HTTP (uvicorn / FastAPI as appropriate)
+ - [ ] access across local network
 - [ ] Implement SSE
