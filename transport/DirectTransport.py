@@ -27,10 +27,10 @@ class DirectTransport(Transport):
     def __init__(self, server_function: Callable):
         self.server_function = server_function
 
-    def send_json_message(self, json_string: str) -> Json:
+    def send_json_message(self, json_str: str) -> Json:
         # Directly send the JSON string, returning the response
-        logger.info(f"Sending JSON from transport to server: {json_string}")
-        json_response = self.server_function(json_string)
+        logger.info(f"Sending JSON from transport to server: {json_str}")
+        json_response = self.server_function(json_str)
         if json_response:
             logger.info(
                 f"Transport received JSON response from server: {json_response}; returning to client."

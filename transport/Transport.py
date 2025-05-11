@@ -28,5 +28,5 @@ class Transport(ABC):
         pass
 
     @abstractmethod
-    def send_json_message(self, json_string: str) -> Optional[Json]:
+    def send_json_message(self, json_str: str) -> Optional[Json]:
         pass

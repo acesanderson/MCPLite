@@ -21,7 +21,7 @@ from MCPLite.primitives import (
     ServerRegistry,
 )
 from MCPLite.server.Server import Server
-from MCPLite.transport import Transport, DirectTransport
+from MCPLite.transport import Transport, DirectTransport, StdioServerTransport
 from typing import Callable, Optional
 
 from MCPLite.logs.logging_config import get_logger
@@ -50,10 +50,20 @@ class MCPLite:
 
     def run(self):
         """
-        Start the server. TBD
+        Start the server.
+        If DirectTransport, just pass since the server is just imported application code.
+        If SdtioServerTransport, start the server with the provided transport.
         """
-        # self.server.run()
-        pass
+        if self.server.transport is None:
+            raise ValueError("Transport is not set. Cannot run the server.")
+        elif self.server.transport == "DirectTransport":
+            pass
+        elif isinstance(self.server.transport, StdioServerTransport):
+            # Start the server with the provided transport
+            logger.info("Starting the server...")
+            self.server.transport.run_server_loop(self.server.process_message)
+        else:
+            raise ValueError("Invalid transport type. Cannot run the server.")
 
     # Our decorators -- for composing the server. Inspired by FastMCP/FastAPI.
     def tool(self, func: Callable) -> Callable:
