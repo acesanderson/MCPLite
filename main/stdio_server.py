@@ -1,8 +1,9 @@
-from MCPLite.logs.logging_config import configure_logging
 from MCPLite.mcplite.mcplite import MCPLite
 from pathlib import Path
 from MCPLite.logs.logging_config import get_logger
 from MCPLite.transport import StdioServerTransport
+from MCPLite.main.example_prompt import partner_prompt
+from jinja2 import Template
 
 # Get logger with this module's name
 logger = get_logger(__name__)

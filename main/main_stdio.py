@@ -20,6 +20,7 @@ from MCPLite.mcplite.mcplite import MCPLite
 from MCPLite.host.Host import Host
 from MCPLite.client.Client import Client
 from MCPLite.main.example_prompt import partner_prompt
+from MCPLite.transport import StdioClientTransport
 from pathlib import Path
 
 # Define the path to the example resource template
@@ -27,52 +28,13 @@ dir_path = Path(__file__).parent
 todos_path = dir_path / "example_resource_template"
 # Set up our Server
 logger.info("Initializing MCPLite application")
-mcp = MCPLite(transport="DirectTransport")
-
-
-@mcp.resource(uri="names://sheepadoodle")
-def name_of_sheepadoodle() -> str:
-    """
-    Returns the name of the sheepadoodle.
-    """
-    return "Otis"
-
-
-@mcp.resource(uri="file://todos/{date}")
-def todos(date: str) -> str:
-    """
-    Returns a list of todos for a given date. Requires YYYY-MM-DD format.
-    """
-    # Extract the date from the URI
-    uri = date.split("/")[-1]
-    # Read the file from the todos_path directory
-    todo = list(todos_path.glob(f"{uri}*.md"))[0]
-    content = todo.read_text()
-    return content
-
-
-@mcp.tool
-def add(a: int, b: int) -> int:
-    """
-    Add two numbers.
-    """
-    return a + b
-
-
-@mcp.prompt
-def partner(topic: str):
-    """
-    Suggest some endorsing partners for a given topic.
-    """
-    prompt_template = Template(partner_prompt)
-    prompt_string = prompt_template.render({"topic": topic})
-    return prompt_string
+server_command = ["python", "stdio_server.py"]
 
 
 if __name__ == "__main__":
     # Create our client
     client = Client(
-        server_function=mcp.server.process_message
+        transport=StdioClientTransport(server_command)
     )  # Default is DirectTransport
     client.initialize()
     # Set up our Host
