@@ -57,7 +57,7 @@ def configure_logging(
         level: The logging level (default: INFO)
         log_file: Optional file to log to (default: None)
         trace_mode: If True, set the logging level to DEBUG
-        console: If True, log to console
+        console: If True, log to console (via stderr)
     """
     # Create a log formatter with trace information if requested
     if trace_mode:
@@ -75,9 +75,10 @@ def configure_logging(
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
 
-    # Add console handler if requested
+    # Add console handler if requested, using stderr instead of stdout
     if console:
-        console_handler = logging.StreamHandler(sys.stdout)
+        # Change from stdout to stderr here
+        console_handler = logging.StreamHandler(sys.stderr)
         console_handler.setFormatter(formatter)
         root_logger.addHandler(console_handler)
 

@@ -11034,3 +11034,34 @@
 2025-05-12 18:53:52,223 [DEBUG] httpcore.http11:45 (trace) - receive_response_body.failed exception=GeneratorExit()
 2025-05-12 18:53:52,223 [DEBUG] httpcore.http11:45 (trace) - response_closed.started
 2025-05-12 18:53:52,223 [DEBUG] httpcore.http11:45 (trace) - response_closed.complete
+2025-05-12 19:17:50,971 [INFO] mcplite:95 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-12 19:17:50,971 [INFO] mcplite:39 (<module>) - Initializing MCPLite application
+2025-05-12 19:17:50,982 [INFO] __main__:16 (<module>) - Initializing MCPLite application
+2025-05-12 19:17:50,982 [DEBUG] mcplite:133 (resource) - Detected regular resource.
+2025-05-12 19:17:50,983 [DEBUG] mcplite:129 (resource) - Detected resource template.
+2025-05-12 19:17:50,983 [INFO] mcplite:66 (run) - Request made to Server from Client.
+2025-05-12 19:22:59,745 [INFO] mcplite:95 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-12 19:22:59,745 [INFO] mcplite:44 (<module>) - Initializing MCPLite application
+2025-05-12 19:22:59,756 [INFO] __main__:16 (<module>) - Initializing MCPLite application
+2025-05-12 19:22:59,757 [DEBUG] mcplite:142 (resource) - Detected regular resource.
+2025-05-12 19:22:59,757 [DEBUG] mcplite:138 (resource) - Detected resource template.
+2025-05-12 19:22:59,757 [INFO] mcplite:71 (run) - Request made to Server from Client.
+2025-05-12 19:22:59,757 [INFO] mcplite:82 (run) - Starting the server...
+2025-05-12 19:23:11,042 [INFO] mcplite:95 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-05-12 19:23:11,967 [DEBUG] instructor:127 (patch) - Patching `client.chat.completions.create` with mode=<Mode.TOOLS: 'tool_call'>
+2025-05-12 19:23:12,006 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 19:23:12,283 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 19:23:12,314 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 19:23:12,315 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
+2025-05-12 19:23:12,540 [INFO] mcplite:26 (<module>) - Initializing MCPLite application
+2025-05-12 19:23:12,541 [INFO] MCPLite.client.Client:56 (initialize) - Client initializing
+2025-05-12 19:23:12,541 [INFO] MCPLite.client.Client:59 (initialize) - Client sending InitializeRequest
+2025-05-12 19:23:12,541 [INFO] MCPLite.client.Client:117 (send_request) - Client sending JSON-RPC request through transport
+2025-05-12 19:23:12,541 [DEBUG] asyncio:64 (__init__) - Using selector: EpollSelector
+2025-05-12 19:23:12,545 [ERROR] MCPLite.transport.SSETransport:208 (send_json_message_async) - Error sending message: 403
+2025-05-12 19:23:12,545 [INFO] MCPLite.client.Client:119 (send_request) - Client received JSON-RPC response from transport: None
+2025-05-12 19:23:12,649 [ERROR] asyncio:1821 (default_exception_handler) - Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x7903ada25430>
+2025-05-12 19:23:12,649 [ERROR] asyncio:1821 (default_exception_handler) - Unclosed connector
+connections: ['deque([(<aiohttp.client_proto.ResponseHandler object at 0x7903ada22cf0>, 802649.730918927)])']
+connector: <aiohttp.connector.TCPConnector object at 0x7903ada27530>

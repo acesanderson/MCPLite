@@ -21,13 +21,27 @@ from MCPLite.primitives import (
     ServerRegistry,
 )
 from MCPLite.server.Server import Server
-from MCPLite.transport import Transport, DirectTransport, StdioServerTransport
+from MCPLite.transport import (
+    Transport,
+    DirectTransport,
+    StdioServerTransport,
+    SSEServerTransport,
+)
 from typing import Callable, Optional
 
-from MCPLite.logs.logging_config import get_logger
+from MCPLite.logs.logging_config import configure_logging
+import logging
 
-# Get logger with this module's name
-logger = get_logger(__name__)
+# Set up logging with trace mode for detailed flow tracking
+logger = configure_logging(
+    level=logging.DEBUG,  # Show all log levels
+    # level=logging.ERROR,  # Show only errors
+    log_file="mcplite_trace.log",  # Also save to file
+    trace_mode=True,  # Include line numbers and function names
+)
+
+# Set up our Server
+logger.info("Initializing MCPLite application")
 
 
 class MCPLite:
@@ -54,6 +68,7 @@ class MCPLite:
         If DirectTransport, just pass since the server is just imported application code.
         If SdtioServerTransport, start the server with the provided transport.
         """
+        logger.info("Request made to Server from Client.")
         if self.server.transport is None:
             raise ValueError("Transport is not set. Cannot run the server.")
         elif self.server.transport == "DirectTransport":
@@ -62,6 +77,10 @@ class MCPLite:
             # Start the server with the provided transport
             logger.info("Starting the server...")
             self.server.transport.run_server_loop(self.server.process_message)
+        elif isinstance(self.server.transport, SSEServerTransport):
+            # Start the server with the provided transport
+            logger.info("Starting the server...")
+            self.server.transport.start()
         else:
             raise ValueError("Invalid transport type. Cannot run the server.")
 
