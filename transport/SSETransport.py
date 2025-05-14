@@ -137,7 +137,12 @@ class SSEClientTransport(Transport):
 
     async def _init_session(self):
         """Initialize the HTTP session."""
-        self.session = aiohttp.ClientSession(headers={"X-Client-ID": self.client_id})
+        self.session = aiohttp.ClientSession(
+            headers={
+                "X-Client-ID": self.client_id,
+                "Origin": "http://localhost:3000",
+            }
+        )
 
     async def _listen_for_sse_events(self):
         """Listen for SSE events from the server."""
