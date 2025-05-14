@@ -130,8 +130,6 @@ class ServerRoute:
             ListPromptsResult: The result containing the list of prompts.
         """
         logger.info(f"Routed to prompts_list route: {request}")
-        if len(self.registry.prompts) == 0:
-            raise ValueError("No prompts found in registry.")
         prompt_list: list[PromptDefinition] = [
             prompt.definition for prompt in self.registry.prompts
         ]
@@ -147,12 +145,6 @@ class ServerRoute:
             ListResourcesResult: The result containing the list of resources.
         """
         logger.info(f"Routed to resources_list route: {request}")
-        if len(self.registry.resources) == 0:
-            raise ValueError("No resources found in registry.")
-        if not any(
-            [isinstance(resource, MCPResource) for resource in self.registry.resources]
-        ):
-            raise ValueError("No resources found in registry.")
         resource_list: list[ResourceDefinition] = [
             resource.definition
             for resource in self.registry.resources
@@ -166,15 +158,6 @@ class ServerRoute:
         List all resource templates in the registry.
         """
         logger.info(f"Routed to resources_templates_list route: {request}")
-        if len(self.registry.resources) == 0:
-            raise ValueError("No resources found in registry.")
-        if not any(
-            [
-                isinstance(resource, MCPResourceTemplate)
-                for resource in self.registry.resources
-            ]
-        ):
-            raise ValueError("No resource templates found in registry.")
         resource_template_list: list[ResourceTemplateDefinition] = [
             resource.definition
             for resource in self.registry.resources
@@ -306,8 +289,6 @@ class ServerRoute:
             ListToolsResult: The result containing the list of tools.
         """
         logger.info(f"Routed to tools_list route: {request}")
-        if len(self.registry.tools) == 0:
-            raise ValueError("No tools found in registry.")
         tool_list: list[ToolDefinition] = [
             tool.definition for tool in self.registry.tools
         ]

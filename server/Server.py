@@ -42,7 +42,11 @@ class Server:
         # Validate the JSON against our pydantic objects.
         # Process the request and return a response.
         logger.info(f"Server received JSON: {json_str}")
-        json_obj = json.loads(json_str)
+        try:
+            json_obj = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to decode JSON: {e}")
+            raise ValueError("Invalid JSON format") from e
         if "method" in json_obj:
             # This is a JSON-RPC request.
             # Validate the request.

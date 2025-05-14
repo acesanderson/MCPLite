@@ -1,5 +1,4 @@
-from MCPLite.messages.MCPMessage import MCPMessage
-from MCPLite.messages.Requests import (
+from MCPLite.messages.MCPMessage import MCPMessage from MCPLite.messages.Requests import (
     Method,
     MCPRequest,
     JSONRPCRequest,
@@ -44,6 +43,27 @@ from MCPLite.messages.Notifications import (
     ProgressNotification,
     LogMessageNotification,
 )
+from MCPLite.messages.Errors import (
+    JSONRPCError,
+    JSONRPCErrorResponse,
+    MCPError,
+    ParseError,
+    InvalidRequestError,
+    MethodNotFoundError,
+    InvalidParamsError,
+    InternalError,
+    ProtocolError,
+    NotInitializedError,
+    AlreadyInitializedError,
+    UnsupportedProtocolVersionError,
+    ResourceNotFoundError,
+    ResourceTemplateNotFoundError,
+    PromptNotFoundError,
+    ToolNotFoundError,
+    CapabilityNotSupportedError,
+    RequestCancelledError,
+
+)
 
 __all__ = [
     "MCPMessage",
@@ -85,4 +105,22 @@ __all__ = [
     "LogMessageNotification",
     "JSONRPCNotification",
     "MCPNotification",
+    "JSONRPCError",
+    "JSONRPCErrorResponse",
+    "MCPError",
+    "ParseError",
+    "InvalidRequestError",
+    "MethodNotFoundError",
+    "InvalidParamsError",
+    "InternalError",
+    "ProtocolError",
+    "NotInitializedError",
+    "AlreadyInitializedError",
+    "UnsupportedProtocolVersionError",
+    "ResourceNotFoundError",
+    "ResourceTemplateNotFoundError",
+    "PromptNotFoundError",
+    "ToolNotFoundError",
+    "CapabilityNotSupportedError",
+    "RequestCancelledError",
 ]

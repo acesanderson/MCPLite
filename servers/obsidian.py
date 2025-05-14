@@ -4,8 +4,13 @@ This is just my implementation of Claude's filesystem MCP.
 
 from MCPLite.mcplite.mcplite import MCPLite
 from MCPLite.transport import StdioServerTransport
+from MCPLite.logs.logging_config import get_logger
 from pathlib import Path
 import os, fnmatch  # fnmatch is Unix-like globbing (wildcards)
+
+# Get logger with this module's name
+logger = get_logger(__name__)
+
 
 # --- Global Setup ---
 _obsidian_path_env = os.getenv("OBSIDIAN_PATH")
@@ -258,3 +263,7 @@ def list_allowed_directories():
     """List all directories the server is allowed to access (subdirectories of OBSIDIAN_PATH)."""
     # OBSIDIAN_ROOT is already validated at startup
     return sorted(list(ALLOWED_DIRS_SET))  # Return the pre-calculated and resolved list
+
+
+if __name__ == "__main__":
+    mcp.run()

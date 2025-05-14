@@ -23,13 +23,10 @@ from MCPLite.main.example_prompt import partner_prompt
 from MCPLite.transport import StdioClientTransport
 from pathlib import Path
 
-# Define the path to the example resource template
-dir_path = Path(__file__).parent
-todos_path = dir_path / "example_resource_template"
 # Set up our Server
 logger.info("Initializing MCPLite application")
-server_command = ["python", "stdio_server.py"]
-
+# server_command = ["python", "stdio_server.py"]
+server_command = ["python", "/home/bianders/Brian_Code/MCPLite/servers/obsidian.py"]
 
 if __name__ == "__main__":
     # Create our client
@@ -41,4 +38,6 @@ if __name__ == "__main__":
     host = Host(model="gpt")
     host.add_client(client)
     # host.run_prompt(prompt_name="partner", topic="Business Intelligence")
-    host.query("What were my todos for May 3 2025?")
+    host.query(
+        "Find the file titled 'Summary of my Job.md' in my fileserver and summarize it for me."
+    )
