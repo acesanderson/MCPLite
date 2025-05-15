@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from MCPLite.messages import MCPMessage
 from typing import Any, Optional, Literal, Union
 from enum import IntEnum
 
@@ -26,7 +27,7 @@ class ErrorCode(IntEnum):
     REQUEST_CANCELLED = -32009  # Request was cancelled
 
 
-class JSONRPCError(BaseModel):
+class JSONRPCError(MCPMessage):
     """Error information for JSON-RPC."""
 
     code: int = Field(..., description="The error type that occurred")

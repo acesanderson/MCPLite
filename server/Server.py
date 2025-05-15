@@ -3,13 +3,31 @@ This takes the registry from mcplite.py.
 This is the server class that will handle incoming requests and route them to the appropriate primitives. It handles all of the application logic as well (since the primitives are in the registry). Dependency injection pattern.
 """
 
-from pydantic import Json
+from pydantic import Json, ValidationError
 from typing import Optional
 from MCPLite.messages import (
     JSONRPCRequest,
     MCPResult,
     JSONRPCResponse,
     JSONRPCNotification,
+    JSONRPCError,
+    JSONRPCErrorResponse,
+    MCPError,
+    ParseError,
+    InvalidRequestError,
+    MethodNotFoundError,
+    InvalidParamsError,
+    InternalError,
+    ProtocolError,
+    NotInitializedError,
+    AlreadyInitializedError,
+    UnsupportedProtocolVersionError,
+    ResourceNotFoundError,
+    ResourceTemplateNotFoundError,
+    PromptNotFoundError,
+    ToolNotFoundError,
+    CapabilityNotSupportedError,
+    RequestCancelledError,
 )
 from MCPLite.primitives import ServerRegistry
 from MCPLite.transport.Transport import Transport
@@ -32,39 +50,60 @@ class Server:
         self.initialization_time: Optional[float] = None
         self.client_info: Optional[dict] = None
 
-    def process_message(
-        self,
-        json_str: Json,
-    ) -> Json:
+    def process_message(self, json_str: Json) -> Json:
         """
         Receive JSON from the client, parse it, and return a response.
         """
-        # Validate the JSON against our pydantic objects.
-        # Process the request and return a response.
         logger.info(f"Server received JSON: {json_str}")
+
+        request_id = None  # Default ID for error responses
+
         try:
-            json_obj = json.loads(json_str)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to decode JSON: {e}")
-            raise ValueError("Invalid JSON format") from e
-        if "method" in json_obj:
-            # This is a JSON-RPC request.
-            # Validate the request.
+            # First, parse the JSON
             try:
-                if JSONRPCRequest.model_validate(json_obj):
-                    logger.info("Valid JSON-RPC request, processing...")
-                    response: Json = self._process_request(json_obj)
-                    return response
-            except:
-                pass
+                json_obj = json.loads(json_str)
+            except json.JSONDecodeError as e:
+                # Handle JSON parsing errors
+                logger.error(f"Failed to decode JSON: {e}")
+                raise ParseError(f"Invalid JSON format: {str(e)}")
+
+            # Extract ID for potential error responses
+            request_id = json_obj.get("id")
+
+            # Check if this is a method-based message (request or notification)
+            if "method" not in json_obj:
+                raise InvalidRequestError("Missing 'method' field in request")
+
+            # Try to validate as a request first
             try:
-                if JSONRPCNotification.model_validate(json_obj):
+                request = JSONRPCRequest.model_validate(json_obj)
+                logger.info("Valid JSON-RPC request, processing...")
+                return self._process_request(json_obj)
+            except ValidationError:
+                # Not a valid request, try as notification
+                try:
+                    notification = JSONRPCNotification.model_validate(json_obj)
                     logger.info("Valid JSON-RPC notification, processing...")
                     self._process_notification(json_obj)
-                    return json_obj
-            except:
-                pass
-        raise ValueError("Invalid JSON-RPC request or notification")
+                    return json.dumps(json_obj)  # Return the original for notifications
+                except ValidationError:
+                    # Neither a valid request nor notification
+                    raise InvalidRequestError(
+                        "Message is neither a valid request nor notification"
+                    )
+
+        except MCPError as e:
+            # Handle MCP-specific errors
+            logger.error(f"MCP error: {e}")
+            error_response = e.to_json_rpc(id=request_id)
+            return error_response.model_dump_json()
+
+        except Exception as e:
+            # Handle unexpected errors
+            logger.error(f"Unexpected error: {e}", exc_info=True)
+            internal_error = InternalError(f"Internal server error: {str(e)}")
+            error_response = internal_error.to_json_rpc(id=request_id)
+            return error_response.model_dump_json()
 
     def _process_request(self, json_obj: dict) -> Json:
         # Process the request.

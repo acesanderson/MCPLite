@@ -6943,3 +6943,299 @@
 [34m  [0m[1;34m}[0m
 [1;34m}[0m
 
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should [0m
+[32mincorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mFind the file titled [0m[33m'Summary of my Job.md'[0m[33m in my fileserver and summarize it for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI'll start by searching for the file [0m[34m"Summary of my Job.md"[0m[34m. One moment please.[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI'm now searching for the file [0m[34m"Summary of my Job.md"[0m[34m on your fileserver. Please hold on while I look for it.[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"path"[0m[34m: [0m[34m""[0m[34m,[0m
+[34m  [0m[34m"pattern"[0m[34m: [0m[34m"Summary of my Job.md"[0m[34m,[0m
+[34m  [0m[34m"excludePatterns"[0m[34m: [0m[1;34m[[0m[1;34m][0m
+[1;34m}[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"path"[0m[34m: [0m[34m""[0m[34m,[0m
+[34m  [0m[34m"pattern"[0m[34m: [0m[34m"Summary of my Job.md"[0m[34m,[0m
+[34m  [0m[34m"excludePatterns"[0m[34m: [0m[1;34m[[0m[1;34m][0m
+[1;34m}[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"path"[0m[34m: [0m[34m""[0m[34m,[0m
+[34m  [0m[34m"pattern"[0m[34m: [0m[34m"Summary of my Job.md"[0m[34m,[0m
+[34m  [0m[34m"excludePatterns"[0m[34m: [0m[1;34m[[0m[1;34m][0m
+[1;34m}[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"path"[0m[34m: [0m[34m""[0m[34m,[0m
+[34m  [0m[34m"pattern"[0m[34m: [0m[34m"Summary of my Job.md"[0m[34m,[0m
+[34m  [0m[34m"excludePatterns"[0m[34m: [0m[1;34m[[0m[1;34m][0m
+[1;34m}[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should [0m
+[32mincorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mFind the file titled [0m[33m'Summary of my Job.md'[0m[33m in my fileserver and summarize it for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI'll search for the file [0m[34m"Summary of my Job.md"[0m[34m in your fileserver. One moment, please.[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI'll search for [0m[34m"Summary of my Job.md"[0m[34m. Please hold on for a moment.[0m[3;34mNone[0m
+
