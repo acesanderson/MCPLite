@@ -6,7 +6,7 @@ Host takes optional clients.
 """
 
 import json
-from Chain import Chain, Message, Model, Prompt, MessageStore
+from Chain import Chain, Message, Model, Prompt, MessageStore, Chat
 from MCPLite.messages import (
     MCPMessage,
     MCPResult,
@@ -34,7 +34,7 @@ from MCPLite.primitives import MCPTool, MCPResource
 
 dir_path = Path(__file__).parent
 system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
-message_store_log_path = dir_path / ".message_store_log"
+message_store_log_path = ".message_store_log"
 
 
 class Host:  # ineerit from Chat?
@@ -77,7 +77,7 @@ class Host:  # ineerit from Chat?
         buffer = ""
 
         for chunk in stream:
-            # print(str(chunk.choices[0].delta.content), end="", flush=True)
+            print(str(chunk.choices[0].delta.content), end="", flush=True)
             # print(chunk.choices[0].delta.content.strip())
             buffer += str(chunk.choices[0].delta.content)
 
@@ -211,12 +211,12 @@ class Host:  # ineerit from Chat?
                     "Observation received, either None or valid MCPResult:", observation
                 )
                 if observation:
-                    print("OBSERVATION RECEIVED:", observation)
+                    logger.info("OBSERVATION RECEIVED:", observation)
                     # If we have an observation, we need to return it.
                     # This is a bit of a hack, but we can just return the observation as a string.
                     # In the future, we might want to return a more structured object.
                     if isinstance(observation, MCPResult):
-                        print("Returning observation:", observation)
+                        logger.info("Returning observation:", observation)
                         self.message_store.add_new(
                             role="assistant",
                             content=observation.model_dump_json(indent=2),

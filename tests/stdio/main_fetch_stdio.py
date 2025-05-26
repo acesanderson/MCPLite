@@ -1,15 +1,10 @@
-"""
-New e2e script; take our dummy code from Host.py.
-Next up: add initialization logic
-"""
-
 from MCPLite.logs.logging_config import configure_logging
 import logging
 
 # Set up logging with trace mode for detailed flow tracking
 logger = configure_logging(
-    level=logging.DEBUG,  # Show all log levels
-    # level=logging.ERROR,  # Show only errors
+    # level=logging.DEBUG,  # Show all log levels
+    level=logging.ERROR,  # Show only errors
     log_file="mcplite_trace.log",  # Also save to file
     trace_mode=True,  # Include line numbers and function names
 )
@@ -21,7 +16,7 @@ from MCPLite.transport import StdioClientTransport
 
 # Set up our Server
 logger.info("Initializing MCPLite application")
-server_command = ["python", "stdio_server.py"]
+server_command = ["python", "fetch_stdio.py"]
 # server_command = ["python", "/home/bianders/Brian_Code/MCPLite/servers/obsidian.py"]
 
 if __name__ == "__main__":
@@ -35,5 +30,5 @@ if __name__ == "__main__":
     host.add_client(client)
     # host.run_prompt(prompt_name="partner", topic="Business Intelligence")
     host.query(
-        "Find the file titled 'Summary of my Job.md' in my fileserver and summarize it for me."
+        "Please read the docs at this link https://modelcontextprotocol.io/ and summarize the key points for me."
     )

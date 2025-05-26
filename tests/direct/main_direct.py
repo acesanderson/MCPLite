@@ -19,7 +19,7 @@ from jinja2 import Template
 from MCPLite.mcplite.mcplite import MCPLite
 from MCPLite.host.Host import Host
 from MCPLite.client.Client import Client
-from MCPLite.main.example_prompt import partner_prompt
+from MCPLite.tests.direct.example_prompt import partner_prompt
 from pathlib import Path
 
 # Define the path to the example resource template

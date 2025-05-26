@@ -1,0 +1,1272 @@
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should [0m
+[32mincorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mFind the file titled [0m[33m'Summary of my Job.md'[0m[33m in my fileserver and summarize it for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI'll search your fileserver for the file titled [0m[34m"Summary of my Job.md"[0m[34m. Please hold on one moment while I locate it.[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should [0m
+[32mincorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mFind the file titled [0m[33m'Summary of my Job.md'[0m[33m in my fileserver and summarize it for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should [0m
+[32mincorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'search_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Recursively search for files/directories from a starting directory\n    within the [0m
+[32mOBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'pattern'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'excludePatterns'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_file'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read complete contents of a file within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m
+[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'read_multiple_files'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Read multiple files simultaneously within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'paths'[0m[32m: [0m[32m'list'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_directory'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List directory contents with [0m[32m[[0m[32mFILE[0m[32m][0m[32m or [0m[32m[[0m[32mDIR[0m[32m][0m[32m prefixes.\n    The directory must be within the [0m
+[32mOBSIDIAN_PATH sandbox.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'get_file_info'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Get detailed file/directory metadata for items within OBSIDIAN_PATH.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m
+[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'path'[0m[32m: [0m[32m'str'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'list_allowed_directories'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'List all directories the server is allowed to access [0m[32m([0m[32msubdirectories of [0m
+[32mOBSIDIAN_PATH[0m[32m)[0m[32m.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mFind the file titled [0m[33m'Summary of my Job.md'[0m[33m in my fileserver and summarize it for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────────── [0mMessage[1;32m ────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI'll search for the file [0m[34m"Summary of my Job.md"[0m[34m on your file server. One moment please.[0m
+
+[3;34mNone[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should incorporate into [0m
+[32myour response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'add'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Add two numbers.'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'a'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'b'[0m[32m: [0m[32m'int'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the sheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m
+[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'names://sheepadoodle'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'name_of_sheepadoodle'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the name of the sheepadoodle.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m
+[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resource templates:[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. Requires YYYY-MM-DD format.'[0m[32m, [0m
+[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uriTemplate'[0m[32m: [0m[32m'file://todos/[0m[32m{[0m[32mdate[0m[32m}[0m[32m'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'todos'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns a list of todos for a given date. Requires YYYY-MM-DD format.'[0m[32m, [0m
+[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[1;32m}[0m
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m
+[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'partner'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Suggest some endorsing partners for a given topic.'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'topic'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m
+[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mFind the file titled [0m[33m'Summary of my Job.md'[0m[33m in my fileserver and summarize it for me.[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI don’t have direct access to your fileserver, so I can’t locate or read “Summary of my Job.md” on my own. Could you either:  [0m
+[1;34m1[0m[1;34m)[0m[34m Tell me the exact path or share a link to that file, or  [0m
+[1;34m2[0m[1;34m)[0m[34m Paste its contents here  [0m
+
+[34mThen I’ll be happy to summarize it for you.[0m[3;34mNone[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI don’t have direct access to browse your fileserver. Could you please either:  [0m
+[1;34m1[0m[1;34m)[0m[34m Provide the exact filepath or share a link/URI to “Summary of my Job.md” on your server, or  [0m
+[1;34m2[0m[1;34m)[0m[34m Copy and paste the contents of the file here  [0m
+
+[34mOnce I have the file’s text, I can read and summarize it for you.[0m[3;34mNone[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI don’t have direct access to your fileserver to locate “Summary of my Job.md.” Could you please either:[0m
+
+[1;34m1[0m[1;34m)[0m[34m Share the exact file path or a download link/URI to that Markdown file on your server  [0m
+[1;34m2[0m[1;34m)[0m[34m Paste the contents of the file here  [0m
+
+[34mOnce I can see the text, I’ll be happy to provide a concise summary.[0m[3;34mNone[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[34mI don’t have direct access to browse your fileserver. To help locate and summarize “Summary of my Job.md,” could you please either:[0m
+
+[1;34m1[0m[1;34m)[0m[34m Provide the full file path or a direct link/URI to that Markdown file on your server  [0m
+[1;34m2[0m[1;34m)[0m[34m Copy and paste the file’s contents here  [0m
+
+[34mOnce I can access the text, I’ll be happy to summarize it for you.[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you [0m
+[32mshould incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: [0m
+[32mURL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start [0m
+[32mcontent from this character index [0m[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        The fetched content, optionally converted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m
+[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: [0m
+[32mURL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start [0m
+[32mcontent from this character index [0m[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        The fetched content, optionally converted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m
+[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch [0m
+[32mserver.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m:[0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch [0m
+[32mserver.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m:[0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch[0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    Returns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m
+[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch[0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    Returns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m
+[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mPlease read the docs at this link [0m[4;33mhttps://modelcontextprotocol.io/[0m[33m and summarize the key points for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m[34m"method"[0m[34m:[0m[34m"tools/call"[0m[34m,[0m[34m"params"[0m[34m:[0m[1;34m{[0m[34m"name"[0m[34m:[0m[34m"fetch"[0m[34m,[0m[34m"arguments"[0m[34m:[0m[1;34m{[0m[34m"url"[0m[34m:[0m[34m"https://modelcontextprotocol.io/"[0m[34m,[0m[34m"max_length"[0m[34m:[0m[1;34m5000[0m[34m,[0m[34m"raw"[0m[34m:fals[0m
+[34me[0m[1;34m}[0m[1;34m}[0m[1;34m}[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"meta"[0m[34m: null,[0m
+[34m  [0m[34m"content"[0m[34m: [0m[1;34m[[0m
+[34m    [0m[1;34m{[0m
+[34m      [0m[34m"annotations"[0m[34m: null,[0m
+[34m      [0m[34m"type"[0m[34m: [0m[34m"text"[0m[34m,[0m
+[34m      [0m[34m"text"[0m[34m: "Introduction - Model Context Protocol\n\n[0m[1;34m[[0m[34mModel Context Protocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.s[0m
+[4;34mvg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m[34m\n\n- [0m[1;34m[[0m[34mPython SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/python-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mTypeScript [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/typescript-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mJava SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/java-sdk[0m[4;34m)[0m[34m\n- [0m
+[1;34m[[0m[34mKotlin SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/kotlin-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mC# [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/csharp-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mSwift [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/swift-sdk[0m[4;34m)[0m[34m\n\n##### Get Started\n\n* [0m[1;34m[[0m[34mIntroduction[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[34m\n* Quickstart\n* [0m
+[1;34m[[0m[34mExample Servers[0m[1;34m][0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mExample Clients[0m[1;34m][0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mFAQs[0m[1;34m][0m[1;34m([0m[34m/[0m[34mfaqs[0m[1;34m)[0m[34m\n\n##### Tutorials\n\n* [0m[1;34m[[0m[34mBuilding MCP with [0m
+[34mLLMs[0m[1;34m][0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mDebugging[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mInspector[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[34m\n\n##### [0m
+[34mConcepts\n\n* [0m[1;34m[[0m[34mCore architecture[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mResources[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mPrompts[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mTools[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mSampling[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34msampling[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mRoots[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mroots[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mTransports[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtransports[0m[1;34m)[0m[34m\n\n##### Development\n\n* [0m[1;34m[[0m[34mWhat's [0m
+[34mNew[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mRoadmap[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mroadmap[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mContributing[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mcontributing[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mModel Context [0m
+[34mProtocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.s[0m
+[4;34mvg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m[34m\n\nSearch[0m[34m...[0m[34m\n\nNavigation\n\nGet Started\n\nIntroduction\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n- [0m
+[1;34m[[0m[34mGitHub[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol[0m[4;34m)[0m[34m\n\nC# SDK released! Check out [0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n\nMCP is an open protocol [0m
+[34mthat standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C [0m
+[34mprovides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to [0m
+[34mconnect AI models to different data sources and tools.\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#why-mcp%3F[0m[1;34m)[0m[34m Why MCP?\n\nMCP helps you build agents and complex [0m
+[34mworkflows on top of LLMs. LLMs frequently need to integrate with data and tools, and MCP provides:\n\n* A growing list of [0m
+[34mpre-built integrations that your LLM can directly plug into\n* The flexibility to switch between LLM providers and vendors\n* Best[0m
+[34mpractices for securing your data within your infrastructure\n\n### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#general-architecture[0m[1;34m)[0m[34m General architecture\n\nAt its core,[0m
+[34mMCP follows a client-server architecture where a host application can connect to multiple servers:\n\n* **MCP Hosts**: Programs [0m
+[34mlike Claude Desktop, IDEs, or AI tools that want to access data through MCP\n* **MCP Clients**: Protocol clients that maintain [0m[1;34m1:1[0m
+[34mconnections with servers\n* **MCP Servers**: Lightweight programs that each expose specific capabilities through the standardized [0m
+[34mModel Context Protocol\n* **Local Data Sources**: Your computer’s files, databases, and services that MCP servers can securely [0m
+[34maccess\n* **Remote Services**: External systems available over the internet [0m[1;34m([0m[34me.g., through APIs[0m[1;34m)[0m[34m that MCP servers can connect [0m
+[34mto\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#get-started[0m[1;34m)[0m[34m Get started\n\nChoose the path that best fits your needs:\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#quick-starts[0m[1;34m)[0m[34m Quick [0m
+[34mStarts\n\[0m[1;34mn[0m[1;34m([0m[34m/quickstart/[0m[34mserver[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34mclient[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34muser[0m[1;34m)[0m[34m\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#examples[0m[1;34m)[0m[34m Examples\n\[0m[1;34mn[0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n\n##[0m
+[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#tutorials[0m[1;34m)[0m[34m [0m
+[34mTutorials\n\[0m[1;34mn[0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[1;34m([0m[4;34mhttps://www.youtube.com/watch?[0m[4;34mv[0m[4;34m=[0m[4;34mkQm[0m
+[4;34mXtrmQ5Zg[0m[4;34m)[0m[34m\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#explore-mcp[0m[1;34m)[0m[34m Explore MCP\n\nDive deeper into MCP’s core concepts and [0m
+[34mcapabilities:\n\[0m[1;34mn[0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m,[0m
+[34m  [0m[34m"isError"[0m[34m: false[0m
+[1;34m}[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m<[0m[1;34manswer[0m[1;34m>[0m
+[34mHere’s a high-level summary of the Model Context Protocol [0m[1;34m([0m[34mMCP[0m[1;34m)[0m[34m documentation:[0m
+
+[1;34m1[0m[34m. Purpose and Vision  [0m
+[34m   • MCP is an open, vendor-agnostic protocol for supplying context [0m[1;34m([0m[34mdata, tools, prompts, etc.[0m[1;34m)[0m[34m to large language models [0m[1;34m([0m[34mLLMs[0m[1;34m)[0m[34m. [0m
+[34m   • It aims to become “the USB-C of AI,” standardizing how applications connect LLMs to local files, databases, APIs, and custom [0m
+[34mtooling.[0m
+
+[1;34m2[0m[34m. Why Use MCP?  [0m
+[34m   • Pre-built integrations: plug your LLM into an ecosystem of data sources and services.  [0m
+[34m   • Interoperability: switch between different LLM providers or tool vendors with minimal changes.  [0m
+[34m   • Security & governance: enforce best practices for data access and isolation within your infrastructure.[0m
+
+[1;34m3[0m[34m. Core Architecture  [0m
+[34m   • Client-Server model:  [0m
+[34m     – MCP Hosts: end-user applications [0m[1;34m([0m[34mIDEs, UIs[0m[1;34m)[0m[34m that want LLM capabilities.  [0m
+[34m     – MCP Clients: libraries that manage connections to one or more servers.  [0m
+[34m     – MCP Servers: lightweight services exposing specific capabilities [0m[1;34m([0m[34me.g., file access, web search[0m[1;34m)[0m[34m.  [0m
+[34m     – Transports: underlying channels [0m[1;34m([0m[34mHTTP, gRPC, WebSocket[0m[1;34m)[0m[34m linking clients and servers.  [0m
+[34m   • Servers can bridge to local data sources [0m[1;34m([0m[34mfile systems, databases[0m[1;34m)[0m[34m or remote APIs.[0m
+
+[1;34m4[0m[34m. Key Concepts  [0m
+[34m   • Resources: data endpoints [0m[1;34m([0m[34mdocuments, records[0m[1;34m)[0m[34m that LLMs can query.  [0m
+[34m   • Prompts: reusable templates defining how to frame LLM requests.  [0m
+[34m   • Tools: executable actions [0m[1;34m([0m[34me.g., run code, call an API[0m[1;34m)[0m[34m that LLMs can invoke.  [0m
+[34m   • Sampling: strategies for handling multiple LLM responses, voting, or reranking.  [0m
+[34m   • Roots: defining conversation context and lineage for traceability.[0m
+
+[1;34m5[0m[34m. Getting Started  [0m
+[34m   • Quickstarts: separate guides for building servers, building clients, or simply using pre-built servers in tools like Claude [0m
+[34mDesktop.  [0m
+[34m   • SDKs: official SDKs in Python, TypeScript, Java, Kotlin, C#, and Swift.  [0m
+[34m   • Examples & Tutorials: sample servers/clients, “Building MCP with LLMs,” debugging, and an interactive Inspector tool.[0m
+
+[1;34m6[0m[34m. Development & Community  [0m
+[34m   • Roadmap and “What’s New” changelog.  [0m
+[34m   • Contribution guidelines for adding new servers or extending the protocol.  [0m
+[34m   • GitHub organization hosting specs, SDKs, and examples.[0m
+
+[34mIn essence, MCP provides a modular, secure, and extensible framework so that any application can uniformly surface data and [0m
+[34mfunctionality to LLMs, simplifying the construction of agents and complex AI-driven workflows.[0m[3;34mNone[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m
+[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you [0m
+[32mshould incorporate into your response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: [0m
+[32mURL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start [0m
+[32mcontent from this character index [0m[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        The fetched content, optionally converted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m
+[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: [0m
+[32mURL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start [0m
+[32mcontent from this character index [0m[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        The fetched content, optionally converted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m
+[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch [0m
+[32mserver.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m:[0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch [0m
+[32mserver.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m:[0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch[0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    Returns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m
+[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch[0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    Returns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m
+[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mPlease read the docs at this link [0m[4;33mhttps://modelcontextprotocol.io/[0m[33m and summarize the key points for me.[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m[34m"method"[0m[34m:[0m[34m"tools/call"[0m[34m,[0m[34m"params"[0m[34m:[0m[1;34m{[0m[34m"name"[0m[34m:[0m[34m"fetch"[0m[34m,[0m[34m"arguments"[0m[34m:[0m[1;34m{[0m[34m"url"[0m[34m:[0m[34m"https://modelcontextprotocol.io/"[0m[34m,[0m[34m"max_length"[0m[34m:[0m[1;34m5000[0m[1;34m}[0m[1;34m}[0m[1;34m}[0m
+
+[1;32m──────────────────────────────────────────────────────────── [0mMessage[1;32m ─────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"meta"[0m[34m: null,[0m
+[34m  [0m[34m"content"[0m[34m: [0m[1;34m[[0m
+[34m    [0m[1;34m{[0m
+[34m      [0m[34m"annotations"[0m[34m: null,[0m
+[34m      [0m[34m"type"[0m[34m: [0m[34m"text"[0m[34m,[0m
+[34m      [0m[34m"text"[0m[34m: "Introduction - Model Context Protocol\n\n[0m[1;34m[[0m[34mModel Context Protocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.s[0m
+[4;34mvg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m[34m\n\n- [0m[1;34m[[0m[34mPython SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/python-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mTypeScript [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/typescript-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mJava SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/java-sdk[0m[4;34m)[0m[34m\n- [0m
+[1;34m[[0m[34mKotlin SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/kotlin-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mC# [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/csharp-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mSwift [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/swift-sdk[0m[4;34m)[0m[34m\n\n##### Get Started\n\n* [0m[1;34m[[0m[34mIntroduction[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[34m\n* Quickstart\n* [0m
+[1;34m[[0m[34mExample Servers[0m[1;34m][0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mExample Clients[0m[1;34m][0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mFAQs[0m[1;34m][0m[1;34m([0m[34m/[0m[34mfaqs[0m[1;34m)[0m[34m\n\n##### Tutorials\n\n* [0m[1;34m[[0m[34mBuilding MCP with [0m
+[34mLLMs[0m[1;34m][0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mDebugging[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mInspector[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[34m\n\n##### [0m
+[34mConcepts\n\n* [0m[1;34m[[0m[34mCore architecture[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mResources[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mPrompts[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mTools[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mSampling[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34msampling[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mRoots[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mroots[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mTransports[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtransports[0m[1;34m)[0m[34m\n\n##### Development\n\n* [0m[1;34m[[0m[34mWhat's [0m
+[34mNew[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mRoadmap[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mroadmap[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mContributing[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mcontributing[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mModel Context [0m
+[34mProtocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.s[0m
+[4;34mvg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m[34m\n\nSearch[0m[34m...[0m[34m\n\nNavigation\n\nGet Started\n\nIntroduction\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n- [0m
+[1;34m[[0m[34mGitHub[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol[0m[4;34m)[0m[34m\n\nC# SDK released! Check out [0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n\nMCP is an open protocol [0m
+[34mthat standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C [0m
+[34mprovides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to [0m
+[34mconnect AI models to different data sources and tools.\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#why-mcp%3F[0m[1;34m)[0m[34m Why MCP?\n\nMCP helps you build agents and complex [0m
+[34mworkflows on top of LLMs. LLMs frequently need to integrate with data and tools, and MCP provides:\n\n* A growing list of [0m
+[34mpre-built integrations that your LLM can directly plug into\n* The flexibility to switch between LLM providers and vendors\n* Best[0m
+[34mpractices for securing your data within your infrastructure\n\n### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#general-architecture[0m[1;34m)[0m[34m General architecture\n\nAt its core,[0m
+[34mMCP follows a client-server architecture where a host application can connect to multiple servers:\n\n* **MCP Hosts**: Programs [0m
+[34mlike Claude Desktop, IDEs, or AI tools that want to access data through MCP\n* **MCP Clients**: Protocol clients that maintain [0m[1;34m1:1[0m
+[34mconnections with servers\n* **MCP Servers**: Lightweight programs that each expose specific capabilities through the standardized [0m
+[34mModel Context Protocol\n* **Local Data Sources**: Your computer’s files, databases, and services that MCP servers can securely [0m
+[34maccess\n* **Remote Services**: External systems available over the internet [0m[1;34m([0m[34me.g., through APIs[0m[1;34m)[0m[34m that MCP servers can connect [0m
+[34mto\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#get-started[0m[1;34m)[0m[34m Get started\n\nChoose the path that best fits your needs:\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#quick-starts[0m[1;34m)[0m[34m Quick [0m
+[34mStarts\n\[0m[1;34mn[0m[1;34m([0m[34m/quickstart/[0m[34mserver[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34mclient[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34muser[0m[1;34m)[0m[34m\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#examples[0m[1;34m)[0m[34m Examples\n\[0m[1;34mn[0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n\n##[0m
+[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#tutorials[0m[1;34m)[0m[34m [0m
+[34mTutorials\n\[0m[1;34mn[0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[1;34m([0m[4;34mhttps://www.youtube.com/watch?[0m[4;34mv[0m[4;34m=[0m[4;34mkQm[0m
+[4;34mXtrmQ5Zg[0m[4;34m)[0m[34m\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#explore-mcp[0m[1;34m)[0m[34m Explore MCP\n\nDive deeper into MCP’s core concepts and [0m
+[34mcapabilities:\n\[0m[1;34mn[0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m,[0m
+[34m  [0m[34m"isError"[0m[34m: false[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should incorporate into [0m
+[32myour response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start content from this character index [0m
+[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    Returns:\n        The fetched content, optionally [0m
+[32mconverted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start content from this character index [0m
+[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    Returns:\n        The fetched content, optionally [0m
+[32mconverted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m
+[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m
+[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mPlease read the docs at this link [0m[4;33mhttps://modelcontextprotocol.io/[0m[33m and summarize the key points for me.[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m[34m"method"[0m[34m:[0m[34m"tools/call"[0m[34m,[0m[34m"params"[0m[34m:[0m[1;34m{[0m[34m"name"[0m[34m:[0m[34m"fetch"[0m[34m,[0m[34m"arguments"[0m[34m:[0m[1;34m{[0m[34m"url"[0m[34m:[0m[34m"https://modelcontextprotocol.io/"[0m[34m,[0m[34m"max_length"[0m[34m:[0m[1;34m5000[0m[1;34m}[0m[1;34m}[0m[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"meta"[0m[34m: null,[0m
+[34m  [0m[34m"content"[0m[34m: [0m[1;34m[[0m
+[34m    [0m[1;34m{[0m
+[34m      [0m[34m"annotations"[0m[34m: null,[0m
+[34m      [0m[34m"type"[0m[34m: [0m[34m"text"[0m[34m,[0m
+[34m      [0m[34m"text"[0m[34m: "Introduction - Model Context Protocol\n\n[0m[1;34m[[0m[34mModel Context Protocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.svg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m
+[34m\n\n- [0m[1;34m[[0m[34mPython SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/python-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mTypeScript SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/typescript-sdk[0m[4;34m)[0m[34m\n- [0m
+[1;34m[[0m[34mJava SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/java-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mKotlin SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/kotlin-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mC# [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/csharp-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mSwift SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/swift-sdk[0m[4;34m)[0m[34m\n\n##### Get Started\n\n* [0m
+[1;34m[[0m[34mIntroduction[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[34m\n* Quickstart\n* [0m[1;34m[[0m[34mExample Servers[0m[1;34m][0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mExample Clients[0m[1;34m][0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mFAQs[0m[1;34m][0m[1;34m([0m[34m/[0m[34mfaqs[0m[1;34m)[0m[34m\n\n##### Tutorials\n\n* [0m
+[1;34m[[0m[34mBuilding MCP with LLMs[0m[1;34m][0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mDebugging[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mInspector[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[34m\n\n##### [0m
+[34mConcepts\n\n* [0m[1;34m[[0m[34mCore architecture[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mResources[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mPrompts[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mTools[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mSampling[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34msampling[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mRoots[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mroots[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mTransports[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtransports[0m[1;34m)[0m[34m\n\n##### Development\n\n* [0m[1;34m[[0m[34mWhat's New[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mRoadmap[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mroadmap[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mContributing[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mcontributing[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mModel Context Protocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.svg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m
+[34m\n\nSearch[0m[34m...[0m[34m\n\nNavigation\n\nGet Started\n\nIntroduction\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n- [0m
+[1;34m[[0m[34mGitHub[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol[0m[4;34m)[0m[34m\n\nC# SDK released! Check out [0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n\nMCP is an open protocol that standardizes [0m
+[34mhow applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect [0m
+[34myour devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.\n\n## [0m
+[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#why-mcp%3F[0m[1;34m)[0m[34m Why MCP?\n\nMCP helps you build agents and complex workflows on top of LLMs. LLMs frequently need to integrate with data and tools, [0m
+[34mand MCP provides:\n\n* A growing list of pre-built integrations that your LLM can directly plug into\n* The flexibility to switch between LLM [0m
+[34mproviders and vendors\n* Best practices for securing your data within your infrastructure\n\n### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#general-architecture[0m[1;34m)[0m[34m General architecture\n\nAt[0m
+[34mits core, MCP follows a client-server architecture where a host application can connect to multiple servers:\n\n* **MCP Hosts**: Programs like Claude [0m
+[34mDesktop, IDEs, or AI tools that want to access data through MCP\n* **MCP Clients**: Protocol clients that maintain [0m[1;34m1:1[0m[34m connections with servers\n* [0m
+[34m**MCP Servers**: Lightweight programs that each expose specific capabilities through the standardized Model Context Protocol\n* **Local Data [0m
+[34mSources**: Your computer’s files, databases, and services that MCP servers can securely access\n* **Remote Services**: External systems available over[0m
+[34mthe internet [0m[1;34m([0m[34me.g., through APIs[0m[1;34m)[0m[34m that MCP servers can connect to\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#get-started[0m[1;34m)[0m[34m Get started\n\nChoose the path that best fits your [0m
+[34mneeds:\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#quick-starts[0m[1;34m)[0m[34m Quick Starts\n\[0m[1;34mn[0m[1;34m([0m[34m/quickstart/[0m[34mserver[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34mclient[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34muser[0m[1;34m)[0m[34m\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#examples[0m[1;34m)[0m[34m [0m
+[34mExamples\n\[0m[1;34mn[0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#tutorials[0m[1;34m)[0m[34m [0m
+[34mTutorials\n\[0m[1;34mn[0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[1;34m([0m[4;34mhttps://www.youtube.com/watch?[0m[4;34mv[0m[4;34m=[0m[4;34mkQmXtrmQ5Zg[0m[4;34m)[0m[34m\n\n## [0m
+[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#explore-mcp[0m[1;34m)[0m[34m Explore MCP\n\nDive deeper into MCP’s core concepts and [0m
+[34mcapabilities:\n\[0m[1;34mn[0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m,[0m
+[34m  [0m[34m"isError"[0m[34m: false[0m
+[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36msystem:[0m
+[32mYou have access to one or more of following capabilities through the MCP framework:[0m
+
+[32mTOOLS - Functions you can call to perform actions[0m
+[32m   - Use tools when you need to execute operations or compute something[0m
+[32m   - Each tool has a name, description, and defined parameters[0m
+[32m   - To call a tool, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"tools/call"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m       [0m[32m"name"[0m[32m: [0m[32m"tool_name"[0m[32m,[0m
+[32m        [0m[32m       [0m[32m"arguments"[0m[32m: [0m[1;32m{[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param1"[0m[32m: [0m[32m"value1"[0m[32m,[0m
+[32m        [0m[32m        [0m[32m [0m[32m"param2"[0m[32m: [0m[32m"value2"[0m
+[32m        [0m[32m       [0m[1;32m}[0m
+[32m        [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+
+[32mRESOURCES - Sources of information you can access[0m
+[32m   - Use resources when you need to retrieve information[0m
+[32m   - Resources are accessed via URI patterns that may be static or templated[0m
+[32m   - To read a resource, use the format:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m:[0m
+[32m        [0m[32m       [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"resource://example"[0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+
+[32mRESOURCE TEMPLATES - Dynamic resources with parameterized URIs[0m
+[32m   - Resource templates allow accessing resources with variable parts in the URI[0m
+[32m   - Templates use curly braces [0m[1;32m{[0m[1;32m}[0m[32m to denote parameters that must be filled[0m
+[32m   - To read a templated resource, substitute the parameters directly into the URI:[0m
+[32m     ```[0m
+[32m     [0m[1;32m{[0m
+[32m       [0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m,[0m
+[32m       [0m[32m"params"[0m[32m: [0m[1;32m{[0m
+[32m         [0m[32m"uri"[0m[32m: [0m[32m"resource://example/value1/value2"[0m
+[32m       [0m[1;32m}[0m
+[32m     [0m[1;32m}[0m
+[32m     ```[0m
+[32m   - Template parameters:[0m
+[32m     - Must be substituted directly into the URI template before making the request[0m
+[32m     - Replace each [0m[1;32m{[0m[32mparameter[0m[1;32m}[0m[32m with its actual value[0m
+[32m     - The resulting URI should be a concrete path with no template variables[0m
+[32m   - Examples:[0m
+[32m     - Template: `[0m[4;32mfile://todos/[0m[1;32m{[0m[32mdate[0m[1;32m}[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"file://todos/2025-05-03"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+[32m     - Template: `db:[0m[32m/[0m[32m/users/[0m[1;32m{[0m[32muserId[0m[1;32m}[0m[32m/[0m[32mprofile[0m[32m` → Usage: `[0m[1;32m{[0m[32m"method"[0m[32m: [0m[32m"resources/read"[0m[32m, [0m[32m"params"[0m[32m: [0m[1;32m{[0m[32m"uri"[0m[32m: [0m[32m"db://users/123/profile"[0m[1;32m}[0m[1;32m}[0m[32m`[0m
+
+
+[32mPROMPTS - Pre-defined templates that users can select for specific interactions[0m
+[32m   - IMPORTANT: Prompts are user-controlled and cannot be directly requested by you [0m[1;32m([0m[32mthe AI[0m[1;32m)[0m
+[32m   - You should be aware that prompts exist as an MCP capability, but only mention them if relevant[0m
+[32m   - Users will select prompts through the interface, not through your suggestions [0m
+[32m   - If available prompts are listed, you can explain their purpose if asked[0m
+
+[32mWhen you need to use any capability:[0m
+[1;32m1[0m[32m. First determine whether you need a Tool, Resource, or Prompt[0m
+[1;32m2[0m[32m. Format your request using the correct structure as shown above[0m
+[1;32m3[0m[32m. For tools, acknowledge that human approval may be required[0m
+[1;32m4[0m[32m. If an error occurs, try different parameters or an alternative approach[0m
+[1;32m5[0m[32m. Report on whether the capability was successfully used[0m
+
+[32mThe system will handle formatting your request into a proper JSON-RPC message, execute it, and return the results, which you should incorporate into [0m
+[32myour response appropriately.[0m
+
+[32mIf you have a final answer, wrap it in xml tags like this:[0m
+[1;32m<[0m[1;32manswer[0m[32m><[0m[32m/[0m[32manswer[0m[32m>[0m
+
+
+[32mYou have access to the following tools:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start content from this character index [0m
+[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    Returns:\n        The fetched content, optionally [0m
+[32mconverted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL from the internet and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m
+[32m([0m[32mrequired[0m[32m)[0m[32m\n        max_length: Maximum number of characters to return [0m[32m([0m[32mdefault: 5000[0m[32m)[0m[32m\n        start_index: Start content from this character index [0m
+[32m([0m[32mdefault: 0[0m[32m)[0m[32m\n        raw: Get raw content without markdown conversion [0m[32m([0m[32mdefault: false[0m[32m)[0m[32m\n\n    Returns:\n        The fetched content, optionally [0m
+[32mconverted to markdown'[0m[32m, [0m[32m'inputSchema'[0m[32m: [0m[1;32m{[0m[32m'type'[0m[32m: [0m[32m'object'[0m[32m, [0m[32m'properties'[0m[32m: [0m[1;32m{[0m[32m'url'[0m[32m: [0m[32m'str'[0m[32m, [0m[32m'max_length'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'start_index'[0m[32m: [0m[32m'int'[0m[32m, [0m[32m'raw'[0m[32m: [0m[32m'bool'[0m[1;32m}[0m[1;32m}[0m[1;32m}[0m
+
+
+
+[32mYou have access to the following resources:[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m
+[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://status'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_status'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns the current status and configuration of the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m
+[32m'text/plain'[0m[32m, [0m[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+[1;32m{[0m[32m'uri'[0m[32m: [0m[32m'fetch://help'[0m[32m, [0m[32m'name'[0m[32m: [0m[32m'fetch_help'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Returns help information about using the fetch server.'[0m[32m, [0m[32m'mimeType'[0m[32m: [0m[32m'text/plain'[0m[32m, [0m
+[32m'size'[0m[32m: [0m[1;32m1024[0m[1;32m}[0m
+
+
+
+
+[32mThe user has access to the following prompts:[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+[1;32m{[0m[32m'name'[0m[32m: [0m[32m'fetch_prompt'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m'Fetch a URL and extract its contents as markdown.\n\n    Args:\n        url: URL to fetch [0m[32m([0m[32mrequired[0m[32m)[0m[32m\n\n    [0m
+[32mReturns:\n        A prompt asking to fetch the URL content'[0m[32m, [0m[32m'arguments'[0m[32m: [0m[1;32m[[0m[1;32m{[0m[32m'name'[0m[32m: [0m[32m'url'[0m[32m, [0m[32m'description'[0m[32m: [0m[32m''[0m[32m, [0m[32m'required'[0m[32m: [0m[3;32mTrue[0m[1;32m}[0m[1;32m][0m[1;32m}[0m
+
+
+
+[32mRemember to wrap your final answer in <answer[0m[1;32m>[0m[32m tags.[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36muser:[0m
+[33mPlease read the docs at this link [0m[4;33mhttps://modelcontextprotocol.io/[0m[33m and summarize the key points for me.[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m[34m"method"[0m[34m:[0m[34m"tools/call"[0m[34m,[0m[34m"params"[0m[34m:[0m[1;34m{[0m[34m"name"[0m[34m:[0m[34m"fetch"[0m[34m,[0m[34m"arguments"[0m[34m:[0m[1;34m{[0m[34m"url"[0m[34m:[0m[34m"https://modelcontextprotocol.io/"[0m[1;34m}[0m[1;34m}[0m[1;34m}[0m
+
+[1;32m────────────────────────────────────────────────────────────────────── [0mMessage[1;32m ───────────────────────────────────────────────────────────────────────[0m
+[1;36massistant:[0m
+[1;34m{[0m
+[34m  [0m[34m"meta"[0m[34m: null,[0m
+[34m  [0m[34m"content"[0m[34m: [0m[1;34m[[0m
+[34m    [0m[1;34m{[0m
+[34m      [0m[34m"annotations"[0m[34m: null,[0m
+[34m      [0m[34m"type"[0m[34m: [0m[34m"text"[0m[34m,[0m
+[34m      [0m[34m"text"[0m[34m: "Introduction - Model Context Protocol\n\n[0m[1;34m[[0m[34mModel Context Protocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.svg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m
+[34m\n\n- [0m[1;34m[[0m[34mPython SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/python-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mTypeScript SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/typescript-sdk[0m[4;34m)[0m[34m\n- [0m
+[1;34m[[0m[34mJava SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/java-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mKotlin SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/kotlin-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mC# [0m
+[34mSDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/csharp-sdk[0m[4;34m)[0m[34m\n- [0m[1;34m[[0m[34mSwift SDK[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol/swift-sdk[0m[4;34m)[0m[34m\n\n##### Get Started\n\n* [0m
+[1;34m[[0m[34mIntroduction[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[34m\n* Quickstart\n* [0m[1;34m[[0m[34mExample Servers[0m[1;34m][0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mExample Clients[0m[1;34m][0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mFAQs[0m[1;34m][0m[1;34m([0m[34m/[0m[34mfaqs[0m[1;34m)[0m[34m\n\n##### Tutorials\n\n* [0m
+[1;34m[[0m[34mBuilding MCP with LLMs[0m[1;34m][0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mDebugging[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mInspector[0m[1;34m][0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[34m\n\n##### [0m
+[34mConcepts\n\n* [0m[1;34m[[0m[34mCore architecture[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mResources[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mPrompts[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mTools[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mSampling[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34msampling[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mRoots[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mroots[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mTransports[0m[1;34m][0m[1;34m([0m[34m/docs/concepts/[0m[34mtransports[0m[1;34m)[0m[34m\n\n##### Development\n\n* [0m[1;34m[[0m[34mWhat's New[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n* [0m[1;34m[[0m[34mRoadmap[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mroadmap[0m[1;34m)[0m[34m\n* [0m
+[1;34m[[0m[34mContributing[0m[1;34m][0m[1;34m([0m[34m/development/[0m[34mcontributing[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mModel Context Protocol home [0m
+[34mpage![0m[1;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/light.svg[0m[4;34m)[0m[4;34m![0m[4;34m([0m[4;34mhttps://mintlify.s3.us-west-1.amazonaws.com/mcp/logo/dark.svg[0m[4;34m)[0m[1;34m][0m[1;34m([0m[34m/[0m[1;34m)[0m[34m\n\nSearch[0m[34m...[0m
+[34m\n\nSearch[0m[34m...[0m[34m\n\nNavigation\n\nGet Started\n\nIntroduction\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n[0m[1;34m[[0m[34mUser [0m
+[34mGuide[0m[1;34m][0m[1;34m([0m[34m/[0m[34mintroduction[0m[1;34m)[0m[1;34m[[0m[34mSDKs[0m[1;34m][0m[1;34m([0m[34m/sdk/java/[0m[34mmcp-overview[0m[1;34m)[0m[1;34m[[0m[34mSpecification[0m[1;34m][0m[1;34m([0m[34m/specification/[0m[34m2025-03-26[0m[1;34m)[0m[34m\n\n- [0m
+[1;34m[[0m[34mGitHub[0m[1;34m][0m[1;34m([0m[4;34mhttps://github.com/modelcontextprotocol[0m[4;34m)[0m[34m\n\nC# SDK released! Check out [0m[1;34m([0m[34m/development/[0m[34mupdates[0m[1;34m)[0m[34m\n\nMCP is an open protocol that standardizes [0m
+[34mhow applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect [0m
+[34myour devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.\n\n## [0m
+[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#why-mcp%3F[0m[1;34m)[0m[34m Why MCP?\n\nMCP helps you build agents and complex workflows on top of LLMs. LLMs frequently need to integrate with data and tools, [0m
+[34mand MCP provides:\n\n* A growing list of pre-built integrations that your LLM can directly plug into\n* The flexibility to switch between LLM [0m
+[34mproviders and vendors\n* Best practices for securing your data within your infrastructure\n\n### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#general-architecture[0m[1;34m)[0m[34m General architecture\n\nAt[0m
+[34mits core, MCP follows a client-server architecture where a host application can connect to multiple servers:\n\n* **MCP Hosts**: Programs like Claude [0m
+[34mDesktop, IDEs, or AI tools that want to access data through MCP\n* **MCP Clients**: Protocol clients that maintain [0m[1;34m1:1[0m[34m connections with servers\n* [0m
+[34m**MCP Servers**: Lightweight programs that each expose specific capabilities through the standardized Model Context Protocol\n* **Local Data [0m
+[34mSources**: Your computer’s files, databases, and services that MCP servers can securely access\n* **Remote Services**: External systems available over[0m
+[34mthe internet [0m[1;34m([0m[34me.g., through APIs[0m[1;34m)[0m[34m that MCP servers can connect to\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#get-started[0m[1;34m)[0m[34m Get started\n\nChoose the path that best fits your [0m
+[34mneeds:\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#quick-starts[0m[1;34m)[0m[34m Quick Starts\n\[0m[1;34mn[0m[1;34m([0m[34m/quickstart/[0m[34mserver[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34mclient[0m[1;34m)[0m[1;34m([0m[34m/quickstart/[0m[34muser[0m[1;34m)[0m[34m\n\n#### [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#examples[0m[1;34m)[0m[34m [0m
+[34mExamples\n\[0m[1;34mn[0m[1;34m([0m[34m/[0m[34mexamples[0m[1;34m)[0m[1;34m([0m[34m/[0m[34mclients[0m[1;34m)[0m[34m\n\n## [0m[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#tutorials[0m[1;34m)[0m[34m [0m
+[34mTutorials\n\[0m[1;34mn[0m[1;34m([0m[34m/tutorials/[0m[34mbuilding-mcp-with-llms[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34mdebugging[0m[1;34m)[0m[1;34m([0m[34m/docs/tools/[0m[34minspector[0m[1;34m)[0m[1;34m([0m[4;34mhttps://www.youtube.com/watch?[0m[4;34mv[0m[4;34m=[0m[4;34mkQmXtrmQ5Zg[0m[4;34m)[0m[34m\n\n## [0m
+[1;34m[[0m[34m​[0m[1;34m][0m[1;34m([0m[34m#explore-mcp[0m[1;34m)[0m[34m Explore MCP\n\nDive deeper into MCP’s core concepts and [0m
+[34mcapabilities:\n\[0m[1;34mn[0m[1;34m([0m[34m/docs/concepts/[0m[34marchitecture[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mresources[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mprompts[0m[1;34m)[0m[1;34m([0m[34m/docs/concepts/[0m[34mtools[0m[1;34m)[0m[34m,[0m
+[34m  [0m[34m"isError"[0m[34m: false[0m
+[1;34m}[0m
+

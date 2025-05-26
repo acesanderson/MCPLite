@@ -26,21 +26,73 @@ class StdioClientTransport(Transport):
         self.process = None
 
     def start(self):
-        """
-        Start the server process.
-        """
+        """Start the server process with better error checking."""
         import subprocess
+        import time
 
-        # Start the server process
-        self.process = subprocess.Popen(
-            self.server_command,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        logger.info(f"Started server process with command: {self.server_command}")
+        try:
+            # Start the server process
+            self.process = subprocess.Popen(
+                self.server_command,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
 
+            # Give the process a moment to start
+            time.sleep(0.1)
+
+            # Check if it started successfully
+            if self.process.poll() is not None:
+                # Process has already terminated
+                return_code = self.process.returncode
+                stderr_output = (
+                    self.process.stderr.read() if self.process.stderr else ""
+                )
+                stdout_output = (
+                    self.process.stdout.read() if self.process.stdout else ""
+                )
+
+                raise RuntimeError(
+                    f"Server process failed to start (exit code: {return_code}). "
+                    f"Command: {' '.join(self.server_command)}. "
+                    f"Stderr: {stderr_output}. "
+                    f"Stdout: {stdout_output}"
+                )
+
+            logger.info(f"Started server process with command: {self.server_command}")
+
+        except FileNotFoundError as e:
+            raise RuntimeError(
+                f"Could not start server: {e}. Check that the command exists: {self.server_command}"
+            )
+        except PermissionError as e:
+            raise RuntimeError(f"Permission denied starting server: {e}")
+        except Exception as e:
+            raise RuntimeError(f"Unexpected error starting server: {e}")
+
+    #
+    # def start(self):
+    #     """
+    #     Start the server process.
+    #     """
+    #     import subprocess
+    #
+    #     # Start the server process
+    #     self.process = subprocess.Popen(
+    #         self.server_command,
+    #         stdin=subprocess.PIPE,
+    #         stdout=subprocess.PIPE,
+    #         stderr=subprocess.PIPE,
+    #         text=True,
+    #     )
+    #     if not self.process:
+    #         logger.error("Failed to start server process.")
+    #         raise RuntimeError("Failed to start server process.")
+    #     else:
+    #         logger.info(f"Started server process with command: {self.server_command}")
+    #
     def stop(self):
         """
         Stop the server process.
