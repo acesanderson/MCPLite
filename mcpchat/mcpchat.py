@@ -280,6 +280,9 @@ class MCPChat(Chat):
                 role="system", content=self.host.system_prompt
             )
 
+    # @property
+    # def available_servers() -> list
+
     def query_model(self, input: list[Message]) -> str | None:
         """
         Override Chat's query_model to use MCP agent capabilities.
