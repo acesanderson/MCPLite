@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Literal
 from pathlib import Path
 from MCPLite.primitives.MCPRegistry import ClientRegistry
-import sys
 
 # Constants
 server_directory = Path(__file__).parent
@@ -70,12 +69,22 @@ class ServerInfo(BaseModel):
         description="Description of the server -- created programmatically",
         default=None,
     )
+    available: bool = Field(
+        description="Whether the server is available for use; this means a successful initialization",
+        default=False,
+    )
 
     def model_post_init(self, __context):
         if not self.capabilities:
             self.capabilities = self._get_capabilities()
+            if not self.capabilities:
+                raise RuntimeError("Failed to retrieve server capabilities.")
         if not self.description:
             self.description = self._generate_description()
+            if not self.description:
+                raise RuntimeError("Failed to generate server description.")
+        print(f"Server {self.name} initialized with capabilities and description.")
+        self.available = True
 
     @property
     def transport(self) -> Literal["stdio", "direct", "sse"]:
@@ -157,7 +166,7 @@ class ServerInfo(BaseModel):
 
 if __name__ == "__main__":
     # Example usage
-    server_path = server_directory / "obsidian.py"
+    server_path = server_directory / "fetch.py"
     print(server_path)
     server_info = ServerInfo(
         name="fetch",
