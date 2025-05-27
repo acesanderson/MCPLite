@@ -11,10 +11,6 @@ from MCPLite.inventory.ServerInfo import (
 from MCPLite.inventory.JSONL_CRUD import (
     load_inventory,
     save_inventory,
-    add_server,
-    remove_server,
-    update_server,
-    get_server,
 )
 from rich.console import Console
 
@@ -26,12 +22,30 @@ class ServerInventory:
     """
     Represents an inventory of servers in a given directory.
     Contains metadata about each server, including its name and address.
+    The inventory is stored in a JSONL file for easy access and manipulation.
+    The inventory can be updated by scanning the server directory for Python files, by running the `update` method.
     """
 
     def __init__(self):
-        self.servers = self._get_servers()
+        self.servers = load_inventory()
+        if self.servers == []:
+            console.print(
+                "[bold yellow]No servers found in inventory. Scanning server directory...[/bold yellow]"
+            )
+            self.update()
 
-    def _get_servers(self) -> list[ServerInfo]:
+    def update(self) -> None:
+        """
+        Create a new server inventory by scanning the server directory.
+        """
+        self.servers = self._update_servers()
+        console.print("[bold green]Server inventory updated successfully![/bold green]")
+        # Update the JSONL file with the current inventory
+        save_inventory(self.servers)
+        # Print the updated inventory
+        self.view_servers()
+
+    def _update_servers(self) -> list[ServerInfo]:
         """
         Retrieves the list of servers from the server directory.
         """
@@ -59,6 +73,7 @@ class ServerInventory:
         """
         Prints the list of servers in the inventory.
         """
+        console.print("\n")
         for server in self.servers:
             console.print(
                 f"[bold green]Server Name:[/bold green][green] {server.name}[/green]\n[bold yellow]Description: [/bold yellow][yellow]{server.description}[/yellow]\n"
@@ -67,4 +82,3 @@ class ServerInventory:
 
 if __name__ == "__main__":
     s = ServerInventory()
-    s.view_servers()
