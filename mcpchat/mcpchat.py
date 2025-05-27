@@ -5,7 +5,7 @@ MCP agent capabilities under the hood.
 """
 
 import json
-from Chain import Chain, Message, Model, Prompt, MessageStore, Chat
+from Chain import Message, Model, Prompt, MessageStore, Chat
 from MCPLite.messages import (
     MCPMessage,
     MCPResult,
@@ -20,6 +20,7 @@ from MCPLite.primitives import ClientRegistry, ServerRegistry
 from MCPLite.transport import DirectTransport
 from MCPLite.server.Server import Server
 from MCPLite.client.Client import Client
+from MCPLite.inventory.ServerInventory import ServerInventory
 from pathlib import Path
 from typing import Optional
 from MCPLite.logs.logging_config import get_logger
@@ -28,9 +29,6 @@ from rich.console import Console
 
 # Get logger with this module's name
 logger = get_logger(__name__)
-
-# For development, note that our Primitives are not actually used at all on client/host side.
-from MCPLite.primitives import MCPTool, MCPResource
 
 dir_path = Path(__file__).parent
 system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"

@@ -1,3 +1,8 @@
+"""
+Desired high level syntax:
+    chat = MCPChat(model="gpt", server="obsidian")
+"""
+
 from mcpchat import (
     MCPChat,
     Client,

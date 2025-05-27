@@ -5,7 +5,7 @@ Serialization and deserialization are handled using the ServerInfo class and jso
 
 from pathlib import Path
 import json
-from MCPLite.servers.ServerInfo import ServerInfo
+from MCPLite.inventory.ServerInfo import ServerInfo
 
 # Constants
 inventory_file = Path(__file__).parent / "available_servers.jsonl"
@@ -42,18 +42,18 @@ def save_inventory(servers: list[ServerInfo]) -> None:
     """
     with inventory_file.open("w") as file:
         for server in servers:
-            file.write(server.json() + "\n")
+            file.write(server.model_dump_json() + "\n")
 
 
-def add_server(server: dict) -> None:
+def add_server(server: ServerInfo) -> None:
     """
     Add a new server to the inventory.
 
     Args:
-        server (dict): A dictionary containing server metadata.
+        server (ServerInfo): The ServerInfo object containing server metadata.
     """
     servers = load_inventory()
-    servers.append(ServerInfo(**server))
+    servers.append(server)
     save_inventory(servers)
 
 
@@ -69,34 +69,34 @@ def remove_server(server_name: str) -> None:
     save_inventory(servers)
 
 
-def update_server(server_name: str, updated_server: dict) -> None:
+def update_server(server_name: str, updated_server: ServerInfo) -> None:
     """
     Update an existing server in the inventory.
 
     Args:
         server_name (str): The name of the server to update.
-        updated_server (dict): A dictionary containing updated server metadata.
+        updated_server (ServerInfo): The updated ServerInfo object.
     """
     servers = load_inventory()
     for i, server in enumerate(servers):
         if server.name == server_name:
-            servers[i] = ServerInfo(**updated_server)
+            servers[i] = updated_server
             break
     save_inventory(servers)
 
 
-def get_server(server_name: str) -> dict | None:
+def get_server(server_name: str) -> ServerInfo | None:
     """
-    Get a server from the inventory by its name.
+    Retrieve a server from the inventory by its name.
 
     Args:
         server_name (str): The name of the server to retrieve.
 
     Returns:
-        dict | None: The server metadata if found, otherwise None.
+        ServerInfo | None: The ServerInfo object if found, otherwise None.
     """
     servers = load_inventory()
     for server in servers:
         if server.name == server_name:
-            return server.dict()
+            return server
     return None
