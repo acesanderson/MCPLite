@@ -16,15 +16,20 @@ from MCPLite.messages import (
     GetPromptRequestParams,
     PromptMessage,
 )
-from MCPLite.primitives import ClientRegistry, ServerRegistry
-from MCPLite.transport import DirectTransport
-from MCPLite.server.Server import Server
+from MCPLite.primitives import ClientRegistry
+from MCPLite.transport import DirectTransport, StdioClientTransport
+from MCPLite.inventory.ServerInfo import (
+    ServerInfo,
+    StdioServerAddress,
+    SSEServerAddress,
+    DirectServerAddress,
+)
 from MCPLite.client.Client import Client
 from MCPLite.inventory.ServerInventory import ServerInventory
+from MCPLite.inventory.ServerInfo import ServerInfo
 from pathlib import Path
 from typing import Optional
 from MCPLite.logs.logging_config import get_logger
-from rich.markdown import Markdown
 from rich.console import Console
 
 # Get logger with this module's name
@@ -36,7 +41,7 @@ system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
 
 class Host:
     """
-    Internal MCP orchestration engine used by MCPChat.
+    Internal MCP orchestration engine used by MCPChat and other LLM-based applications (like `twig`).
     Handles MCP protocol, client management, and agent loops.
     """
 
@@ -52,9 +57,13 @@ class Host:
         Adds client to list and updates system prompt.
         """
         client.initialize()
-        self.clients.append(client)
-        self.registry += client.registry
-        self.system_prompt = self.generate_system_prompt()
+        if client.initialized:
+            self.clients.append(client)
+            self.registry += client.registry
+            self.system_prompt = self.generate_system_prompt()
+        else:
+            logger.error(f"Failed to initialize client:\n{client}")
+            raise ValueError(f"Failed to initialize client:\n{client}")
 
     def generate_system_prompt(self):
         """
@@ -258,7 +267,9 @@ class MCPChat(Chat):
     Provides familiar chat commands plus sophisticated MCP agent capabilities.
     """
 
-    def __init__(self, model: str = "gpt", **kwargs):
+    serverinventory: ServerInventory = ServerInventory()
+
+    def __init__(self, model: str = "gpt", server: list | str = "", **kwargs):
         # Initialize Chat parent class
         super().__init__(model=Model(model), **kwargs)
 
@@ -271,6 +282,9 @@ class MCPChat(Chat):
         # Set system message from MCP capabilities (will be empty initially)
         self._update_system_message()
 
+        # Set up any requested servers
+        self._setup_servers(server, self.host)
+
     def _update_system_message(self):
         """Update system message based on current MCP capabilities."""
         if self.host.system_prompt:
@@ -278,8 +292,70 @@ class MCPChat(Chat):
                 role="system", content=self.host.system_prompt
             )
 
-    # @property
-    # def available_servers() -> list
+    def _add_server(self, server: ServerInfo):
+        """
+        Add a single MCP server to Host's client list.
+        This should parse by different transport types (e.g., Stdio, HTTP) and then create the right clients to sent to host's add_client method.
+        """
+        if isinstance(server, ServerInfo):
+            match server.address:
+                case StdioServerAddress():
+                    # Create a Stdio client
+                    client = Client(
+                        transport=StdioClientTransport(server.address.commands)
+                    )
+                    self.host.add_client(client)
+                    self._update_system_message()  # Update with new capabilities
+
+                case SSEServerAddress():
+                    raise NotImplementedError(
+                        "SSE transport is not yet implemented in MCPChat."
+                    )
+                case DirectServerAddress():
+                    # Create a Direct transport client
+                    import_statement = server.address.import_statement
+                    # Execute the import statement to get the server function
+                    if import_statement:
+                        # Assuming import_statement is a callable function that can be used directly as a server function
+                        if isinstance(import_statement, str):
+                            try:
+                                # If it's a string, assume it's a path to a server function
+                                server_function = __import__(import_statement)
+                                client = Client(
+                                    transport=DirectTransport(server_function)
+                                )
+                                self.host.add_client(client)
+                                self._update_system_message()  # Update with new capabilities
+                            except ImportError as e:
+                                raise ImportError(
+                                    f"Failed to import server function from '{import_statement}': {str(e)}"
+                                )
+
+        else:
+            raise ValueError("Server must be an instance of ServerInfo.")
+
+    def _setup_servers(self, server: list | str, host: Host):
+        """
+        Set up MCP servers based on provided server list or single server.
+        """
+        if isinstance(server, str):
+            server = [server]
+
+        if not server:
+            # No servers specified, return None
+            return
+
+        for srv in server:
+            for server_info in self.serverinventory.servers:
+                if server_info.name == srv:
+                    # Found matching server, add it
+                    self._add_server(server_info)
+                    break
+
+    @property
+    def available_servers(self):
+        """Return a list of available MCP servers."""
+        self.serverinventory.view_servers(self.console)
 
     def query_model(self, input: list[Message]) -> str | None:
         """
@@ -375,6 +451,17 @@ class MCPChat(Chat):
             self.console.print(Markdown(result))
         except Exception as e:
             self.console.print(f"Error running prompt: {str(e)}", style="red")
+
+    # MCP client management commands
+
+    def command_list_servers(self):
+        """List available MCP servers."""
+        if not self.serverinventory.servers:
+            self.console.print("No MCP servers available.", style="yellow")
+            return
+
+        self.console.print("Available MCP Servers:", style="bold green")
+        self.serverinventory.view_servers(self.console)
 
     def command_add_client(self, client_info: str):
         """Add an MCP client. Usage: /add client <description>"""

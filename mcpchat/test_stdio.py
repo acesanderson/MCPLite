@@ -14,16 +14,7 @@ from pathlib import Path
 def main():
     """Example usage of MCPChat."""
     # Create MCP Chat instance
-    chat = MCPChat(model="gpt")
-    server_path = (
-        Path.home() / "Brian_Code" / "MCPLite" / "tests" / "stdio" / "fetch_stdio.py"
-    )
-
-    # Create client connected to our server
-    client = Client(transport=StdioClientTransport(["python", str(server_path)]))
-
-    # Add client to our chat host
-    chat.host.add_client(client)
+    chat = MCPChat(model="gpt", server="obsidian")
     chat._update_system_message()  # Update with new capabilities
 
     # Start the chat

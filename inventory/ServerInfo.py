@@ -88,11 +88,12 @@ class ServerInfo(BaseModel):
             self.capabilities = self._get_capabilities()
             if not self.capabilities:
                 raise RuntimeError("Failed to retrieve server capabilities.")
+            print(f"Server {self.name} initialized with capabilities.")
         if not self.description:
             self.description = self._generate_description()
             if not self.description:
                 raise RuntimeError("Failed to generate server description.")
-        print(f"Server {self.name} initialized with capabilities and description.")
+            print(f"Server {self.name} description generated.")
         self.available = True
 
     @property
