@@ -65,7 +65,7 @@ class ServerInfo(BaseModel):
     """
 
     name: str = Field(description="Name of the server -- first half of the file name")
-    address: ServerAddress = Field(
+    address: StdioServerAddress | DirectServerAddress | SSEServerAddress = Field(
         description="Address of the server, either as a list of commands for stdio, a URL and port, or as a Python import",
     )
 

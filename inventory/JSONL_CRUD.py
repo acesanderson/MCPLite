@@ -5,7 +5,9 @@ Serialization and deserialization are handled using the ServerInfo class and jso
 
 from pathlib import Path
 import json
-from MCPLite.inventory.ServerInfo import ServerInfo
+from MCPLite.inventory.ServerInfo import (
+    ServerInfo,
+)
 
 # Constants
 inventory_file = Path(__file__).parent / "available_servers.jsonl"
