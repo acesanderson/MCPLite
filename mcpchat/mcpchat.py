@@ -27,6 +27,12 @@ from MCPLite.inventory.ServerInfo import (
 from MCPLite.client.Client import Client
 from MCPLite.inventory.ServerInventory import ServerInventory
 from MCPLite.inventory.ServerInfo import ServerInfo
+from MCPLite.messages import (
+    MCPRequest,
+    CallToolRequest,
+    GetPromptRequest,
+    ReadResourceRequest,
+)
 from pathlib import Path
 from typing import Optional
 from MCPLite.logs.logging_config import get_logger, configure_logging, logging
@@ -115,7 +121,7 @@ class Host:
                 return buffer, {"answer": answer}
 
             # Look for any complete JSON object
-            json_objects = self.find_json_objects(buffer)
+            json_objects = self._find_json_objects(buffer)
 
             if json_objects:
                 # For each JSON object found, try to validate it
@@ -134,7 +140,7 @@ class Host:
         # If we processed the entire stream without finding valid JSON
         return buffer, None
 
-    def find_json_objects(self, text):
+    def _find_json_objects(self, text):
         """
         Find complete JSON objects in a text string, starting from the first opening brace.
         All MCP Request messages have 'method' fields.
@@ -178,7 +184,7 @@ class Host:
 
         return json_objects
 
-    def process_message(self, message: MCPMessage) -> MCPResult | None:
+    def process_message(self, message: MCPRequest) -> MCPResult | None:
         """
         Process the message received from the stream.
         This sends message to the appropriate client, and returns the response.
@@ -186,8 +192,71 @@ class Host:
         if not self.clients:
             raise ValueError("No clients available to process the message.")
 
-        response = self.clients[0].send_request(message)
+        # Route the message to the appropriate tool
+        client: Client = self._identify_client(message)
+
+        response = client.send_request(message)
         return response
+
+    def _identify_client(self, message: MCPRequest) -> Client:
+        """
+        For a given MCPMessage, identify the relevant client from self.clients.
+        LLM requests are only the three Requests invoking each of the three primitives.
+        """
+
+        if isinstance(message, CallToolRequest):
+            tool_name = message.params.name
+            # Find which client has this tool
+            for client in self.clients:
+                if isinstance(client, Client) and client.initialized:
+                    for tool in client.registry.tools:
+                        if tool.name == tool_name:
+                            return client
+
+        elif isinstance(message, GetPromptRequest):
+            prompt_name = message.params.name
+            # Find which client has this prompt
+            for client in self.clients:
+                if isinstance(client, Client) and client.initialized:
+                    for prompt in client.registry.prompts:
+                        if prompt.name == prompt_name:
+                            return client
+
+        elif isinstance(message, ReadResourceRequest):
+            resource_uri = message.params.uri
+            # Find which client has this resource (including templates)
+            for client in self.clients:
+                if isinstance(client, Client) and client.initialized:
+                    for resource in client.registry.resources:
+                        # Handle both regular resources and resource templates
+                        if hasattr(resource, "uri") and resource.uri == resource_uri:
+                            return client
+                        elif hasattr(resource, "uriTemplate"):
+                            # Check if URI matches the template pattern
+                            # You'll need to implement template matching logic
+                            if self._uri_matches_template(
+                                resource_uri, resource.uriTemplate
+                            ):
+                                return client
+        else:
+            # Raise an error if we can't match to the client.
+            logger.warning(
+                f"Unknown MCPRequest type: {type(message).__name__}. Cannot identify client."
+            )
+            raise ValueError(
+                f"Unknown MCPRequest type: {type(message).__name__}. Cannot identify client."
+            )
+
+    def _uri_matches_template(self, uri: str, template: str) -> bool:
+        """
+        Check if a URI matches a template pattern.
+        This is a simplified version - you might want more sophisticated matching.
+        """
+        import re
+
+        # Convert template like "file://todos/{date}" to regex
+        pattern = re.escape(template).replace(r"\{[^}]+\}", r"[^/]+")
+        return re.match(f"^{pattern}$", uri) is not None
 
     def agent_query(self, prompt: str, message_store: MessageStore) -> str | None:
         """
@@ -250,7 +319,7 @@ class Host:
                     # Continue the loop to get the next response
                     continue
 
-    def convert_PromptMessage_to_Message(
+    def _convert_PromptMessage_to_Message(
         self, prompt_message: PromptMessage
     ) -> Message:
         """Convert a PromptMessage to a Message (Chain)."""
@@ -281,7 +350,7 @@ class Host:
                     messages = []
                     for message in prompt_result.messages:
                         if isinstance(message, PromptMessage):
-                            converted = self.convert_PromptMessage_to_Message(message)
+                            converted = self._convert_PromptMessage_to_Message(message)
                             messages.append(f"{converted.role}: {converted.content}")
                     return "\n".join(messages)
 

@@ -318,7 +318,7 @@ MCPRequests = [
 ]
 
 
-def parse_request(json_dict: dict) -> Optional[MCPMessage]:
+def parse_request(json_dict: dict) -> Optional[MCPRequest]:
     """
     Takes an arbitary JSON string; if it matches the schema of the MCPMessage classes, return the object.
     """
