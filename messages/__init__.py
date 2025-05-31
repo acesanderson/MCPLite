@@ -28,6 +28,7 @@ from MCPLite.messages.Responses import (
     ReadResourceResult,
     InitializeResult,
     minimal_server_initialization,
+    TextContent,
 )
 from MCPLite.messages.Definitions import (
     PromptDefinition,
@@ -123,4 +124,5 @@ __all__ = [
     "ToolNotFoundError",
     "CapabilityNotSupportedError",
     "RequestCancelledError",
+    "TextContent",
 ]

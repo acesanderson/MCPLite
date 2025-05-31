@@ -15,11 +15,11 @@ from MCPLite.messages import (
     MCPResult,
     minimal_client_initialization,
     MCPNotification,
+    Method,
 )
 from MCPLite.logs.logging_config import get_logger
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport import DirectTransport, Transport, StdioClientTransport
-from MCPLite.inventory.ServerInfo import ServerInfo
 import json
 from typing import Optional, Callable
 
@@ -124,18 +124,40 @@ class Client:
         )
         json_obj = json.loads(json_response)
         try:
-            logger.info(f"Client parsing JSON-RPC response: {json_obj}")
+            # Check if this is a JSON-RPC error response
+            if "error" in json_obj:
+                error_info = json_obj["error"]
+                error_code = error_info.get("code", -32603)
+                error_message = error_info.get("message", "Unknown error")
+                logger.info(f"Server return JSON-RPC error: {error_info}")
+
+                # Only convert tool call errors to CallToolResult (per MCP spec)
+                if request.method == Method.TOOLS_CALL:
+                    from MCPLite.messages import CallToolResult, TextContent
+
+                    error_content = TextContent(
+                        type="text", text=f"Error {error_code}: {error_message}"
+                    )
+
+                    return CallToolResult(  # type: ignore
+                        content=[error_content], isError=True
+                    )
+            # Handle success response normally
             jsonrpc_response = JSONRPCResponse(**json_obj)
-            logger.info(
-                f"Client converting JSON-RPC response to MCPResult object: {jsonrpc_response}"
-            )
             mcp_result = jsonrpc_response.from_json_rpc()
             logger.info(
-                f"Client converted JSON-RPC response to MCPResult object: {mcp_result}"
+                f"Client converted JSON-RPC error response to MCPResult object: {mcp_result}"
             )
             return mcp_result
-        except ValueError as e:
-            raise ValueError(f"Invalid JSON-RPC response from server: {e}")
+        except Exception as e:
+            # If parsing fails completely, create generic error result.
+            logger.error(f"Failed to parse server response: {e}")
+            from MCPLite.messages import CallToolResult, TextContent
+
+            error_content = TextContent(
+                type="text", text=f"Error parsing response: {str(e)}"
+            )
+            return CallToolResult(content=[error_content], isError=True)  # type: ignore
 
     def send_notification(self, notification: MCPNotification):
         """

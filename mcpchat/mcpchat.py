@@ -228,21 +228,26 @@ class Host:
                 )
                 self.console.print(f"[yellow]{request_text}[/yellow]")
 
-                try:
-                    observation: MCPResult = self.process_message(special_catch)
-                    if observation:
-                        # Add observation to conversation and continue
+                observation: MCPResult = self.process_message(special_catch)
+                if observation:
+                    # Check if this is an error result
+                    is_error = getattr(observation, "isError", False)
+
+                    if is_error:
+                        # Display error result but continue conversation
+                        observation_text = (
+                            f"[Server Error]\n{observation.model_dump_json(indent=2)}"
+                        )
+                        self.console.print(f"[red]{observation_text}[/red]")
+                    else:
+                        # Display normal result
                         observation_text = (
                             f"[Tool Result]\n{observation.model_dump_json(indent=2)}"
                         )
                         self.console.print(f"[green]{observation_text}[/green]")
-                        message_store.add_new(role="user", content=observation_text)
-                        # Continue the loop to get the next response
-                        continue
-                except Exception as e:
-                    error_text = f"\n[Tool Error]\n{str(e)}\n"
-                    self.console.print(f"[red]{error_text}[/red]")
-                    message_store.add_new(role="user", content=error_text)
+
+                    message_store.add_new(role="user", content=observation_text)
+                    # Continue the loop to get the next response
                     continue
 
     def convert_PromptMessage_to_Message(
