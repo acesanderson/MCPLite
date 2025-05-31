@@ -29,14 +29,21 @@ from MCPLite.inventory.ServerInventory import ServerInventory
 from MCPLite.inventory.ServerInfo import ServerInfo
 from pathlib import Path
 from typing import Optional
-from MCPLite.logs.logging_config import get_logger
+from MCPLite.logs.logging_config import get_logger, configure_logging, logging
 from rich.console import Console
 
 # Get logger with this module's name
 logger = get_logger(__name__)
 
 dir_path = Path(__file__).parent
+mcpchat_log_path = dir_path.parent / ".mcpchat.log"
 system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
+
+# Configure logging for this module
+configure_logging(
+    log_file=mcpchat_log_path,
+    level=logging.INFO,
+)
 
 
 class Host:
@@ -89,8 +96,15 @@ class Host:
 
         for chunk in stream:
             content = str(chunk.choices[0].delta.content)
-            if self.console:
-                self.console.print(content, end="")
+            if content:
+                # Print the content to console if available
+                if self.console:
+                    # Use rich console to print content without newlines
+                    # This allows for streaming output in real-time
+                    if buffer:
+                        # If there's existing buffer, print it first
+                        print(buffer, end="")
+                    # Print the new content chunk
             buffer += content
 
             # Look for <answer> tags, if found, return the content
@@ -111,7 +125,6 @@ class Host:
                         mcpmessage = parse_request(json_data)
 
                         if mcpmessage:
-                            print("\n[MCP Tool Call Detected]")
                             stream.close()
                             return buffer, mcpmessage
 
@@ -209,17 +222,26 @@ class Host:
             elif isinstance(special_catch, MCPMessage):
                 # Found MCP request - process it
                 message_store.add_new(role="assistant", content=buffer)
+                # Print out the MCP message so user can see.
+                request_text = (
+                    f"[MCP Request]\n{special_catch.model_dump_json(indent=2)}"
+                )
+                self.console.print(f"[yellow]{request_text}[/yellow]")
 
                 try:
                     observation: MCPResult = self.process_message(special_catch)
                     if observation:
                         # Add observation to conversation and continue
-                        observation_text = f"\n[Tool Result]\n{observation.model_dump_json(indent=2)}\n"
+                        observation_text = (
+                            f"[Tool Result]\n{observation.model_dump_json(indent=2)}"
+                        )
+                        self.console.print(f"[green]{observation_text}[/green]")
                         message_store.add_new(role="user", content=observation_text)
                         # Continue the loop to get the next response
                         continue
                 except Exception as e:
                     error_text = f"\n[Tool Error]\n{str(e)}\n"
+                    self.console.print(f"[red]{error_text}[/red]")
                     message_store.add_new(role="user", content=error_text)
                     continue
 
@@ -283,7 +305,7 @@ class MCPChat(Chat):
         self._update_system_message()
 
         # Set up any requested servers
-        self._setup_servers(server, self.host)
+        self._setup_servers(server)
 
     def _update_system_message(self):
         """Update system message based on current MCP capabilities."""
@@ -302,7 +324,8 @@ class MCPChat(Chat):
                 case StdioServerAddress():
                     # Create a Stdio client
                     client = Client(
-                        transport=StdioClientTransport(server.address.commands)
+                        name=server.name,
+                        transport=StdioClientTransport(server.address.commands),
                     )
                     self.host.add_client(client)
                     self._update_system_message()  # Update with new capabilities
@@ -322,7 +345,8 @@ class MCPChat(Chat):
                                 # If it's a string, assume it's a path to a server function
                                 server_function = __import__(import_statement)
                                 client = Client(
-                                    transport=DirectTransport(server_function)
+                                    name=server.name,
+                                    transport=DirectTransport(server_function),
                                 )
                                 self.host.add_client(client)
                                 self._update_system_message()  # Update with new capabilities
@@ -334,7 +358,7 @@ class MCPChat(Chat):
         else:
             raise ValueError("Server must be an instance of ServerInfo.")
 
-    def _setup_servers(self, server: list | str, host: Host):
+    def _setup_servers(self, server: list | str):
         """
         Set up MCP servers based on provided server list or single server.
         """
@@ -395,18 +419,93 @@ class MCPChat(Chat):
             self.console.print("No MCP clients connected.", style="yellow")
             return
 
+        # Summary
+        valid_clients = [
+            client for client in self.host.clients if isinstance(client, Client)
+        ]
+        initialized_clients = [client for client in valid_clients if client.initialized]
+
+        self.console.print(f"[bold]MCP Status[/bold]")
         self.console.print(
-            f"Connected MCP clients: {len(self.host.clients)}", style="green"
+            f"Clients: {len(initialized_clients)}/{len(valid_clients)} initialized"
         )
-        self.console.print(
-            f"Available tools: {len(self.host.registry.tools)}", style="blue"
-        )
-        self.console.print(
-            f"Available resources: {len(self.host.registry.resources)}", style="blue"
-        )
-        self.console.print(
-            f"Available prompts: {len(self.host.registry.prompts)}", style="blue"
-        )
+        self.console.print()
+
+        # Show each client
+        for client in self.host.clients:
+            if not isinstance(client, Client):
+                self.console.print("[red]Invalid client (NoneType)[/red]")
+                continue
+
+            if client.initialized:
+                # Get transport type
+                transport_type = (
+                    type(client.transport).__name__.replace("Transport", "")
+                    if client.transport
+                    else "Unknown"
+                )
+
+                # Get capability counts
+                tools_count = (
+                    len(client.registry.tools) if hasattr(client, "registry") else 0
+                )
+                resources_count = (
+                    len(client.registry.resources) if hasattr(client, "registry") else 0
+                )
+                prompts_count = (
+                    len(client.registry.prompts) if hasattr(client, "registry") else 0
+                )
+
+                # Client header with summary
+                self.console.print(
+                    f"[bold green]{client.name}[/bold green] ({transport_type}) - [yellow]{tools_count} tools[/yellow], [blue]{resources_count} resources[/blue], [magenta]{prompts_count} prompts[/magenta]"
+                )
+
+                if hasattr(client, "registry"):
+                    # Tools - just names
+                    if client.registry.tools:
+                        tool_names = [tool.name for tool in client.registry.tools]
+                        self.console.print(
+                            f"  [yellow]Tools:[/yellow] {', '.join(tool_names)}"
+                        )
+
+                    # Resources - just names
+                    if client.registry.resources:
+                        resource_names = [
+                            resource.name for resource in client.registry.resources
+                        ]
+                        self.console.print(
+                            f"  [blue]Resources:[/blue] {', '.join(resource_names)}"
+                        )
+
+                    # Prompts - just names
+                    if client.registry.prompts:
+                        prompt_names = [
+                            prompt.name for prompt in client.registry.prompts
+                        ]
+                        self.console.print(
+                            f"  [magenta]Prompts:[/magenta] {', '.join(prompt_names)}"
+                        )
+
+                    if not (
+                        client.registry.tools
+                        or client.registry.resources
+                        or client.registry.prompts
+                    ):
+                        self.console.print("  [dim]No capabilities[/dim]")
+
+            else:
+                # Not initialized - grayed out
+                transport_type = (
+                    type(client.transport).__name__.replace("Transport", "")
+                    if client.transport
+                    else "Unknown"
+                )
+                self.console.print(
+                    f"[dim]{client.name} ({transport_type}) - Not initialized[/dim]"
+                )
+
+            self.console.print()  # Empty line between clients
 
     def command_list_tools(self):
         """List available MCP tools."""
@@ -453,7 +552,6 @@ class MCPChat(Chat):
             self.console.print(f"Error running prompt: {str(e)}", style="red")
 
     # MCP client management commands
-
     def command_list_servers(self):
         """List available MCP servers."""
         if not self.serverinventory.servers:

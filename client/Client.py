@@ -19,6 +19,7 @@ from MCPLite.messages import (
 from MCPLite.logs.logging_config import get_logger
 from MCPLite.primitives.MCPRegistry import ClientRegistry
 from MCPLite.transport import DirectTransport, Transport, StdioClientTransport
+from MCPLite.inventory.ServerInfo import ServerInfo
 import json
 from typing import Optional, Callable
 
@@ -29,12 +30,14 @@ logger = get_logger(__name__)
 class Client:
     def __init__(
         self,
+        name: str = "Generic Client",
         transport: str | Transport | StdioClientTransport = "DirectTransport",
         server_function: Optional[Callable] = None,
     ):
         """
         Initialize the client.
         """
+        self.name = name
         self.registry = ClientRegistry()
         self.transport = transport
         self.server_function = server_function

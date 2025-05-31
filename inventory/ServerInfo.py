@@ -2,18 +2,18 @@ from pydantic import BaseModel, Field
 from typing import Literal
 from pathlib import Path
 from MCPLite.primitives.MCPRegistry import ClientRegistry
-from Chain import Chain, Model, Prompt, ChainCache
+from Chain import Chain, Model, Prompt
 
 # Constants
 ## Directory where server scripts are stored; this is imported by ServerInventory.py
 server_directory = Path.home() / "Brian_Code" / "MCPLite" / "servers"
 ## Cache for storing chain results -- we don't want to recreate descriptions every time we access our inventory.
-cache = ChainCache(
-    db_name=str(
-        server_directory / ".chain_cache.db",
-    )
-)
-Model._chain_cache = cache
+# cache = ChainCache(
+#     db_name=str(
+#         server_directory / ".chain_cache.db",
+#     )
+# )
+# Model._chain_cache = cache
 
 
 # Pydantic classes
