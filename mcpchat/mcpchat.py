@@ -94,51 +94,118 @@ class Host:
         rendered = system_prompt.render(input_variables)
         return rendered
 
+    # def process_stream(self, stream) -> tuple[str, MCPMessage | None | dict]:
+    #     """
+    #     Process LLM stream, looking for MCP requests and special answer tags.
+    #     """
+    #     buffer = ""
+    #
+    #     try:
+    #         for chunk in stream:
+    #             content = str(chunk.choices[0].delta.content)
+    #             if content:
+    #                 # Print the content to console if available
+    #                 if self.console:
+    #                     # Use rich console to print content without newlines
+    #                     # This allows for streaming output in real-time
+    #                     if buffer:
+    #                         # If there's existing buffer, print it first
+    #                         print(buffer, end="")
+    #                     # Print the new content chunk
+    #             buffer += content
+    #
+    #             # Look for <answer> tags, if found, return the content
+    #             if "<answer>" in buffer and "</answer>" in buffer:
+    #                 start_idx = buffer.index("<answer>") + len("<answer>")
+    #                 end_idx = buffer.index("</answer>")
+    #                 answer = buffer[start_idx:end_idx]
+    #                 return buffer, {"answer": answer}
+    #
+    #             # Look for any complete JSON object
+    #             json_objects = self._find_json_objects(buffer)
+    #
+    #             if json_objects:
+    #                 # For each JSON object found, try to validate it
+    #                 for json_str in json_objects:
+    #                     try:
+    #                         json_data = json.loads(json_str)
+    #                         mcpmessage = parse_request(json_data)
+    #
+    #                         if mcpmessage:
+    #                             stream.close()
+    #                             return buffer, mcpmessage
+    #
+    #                     except json.JSONDecodeError:
+    #                         continue
+    #
+    #         # If we processed the entire stream without finding valid JSON
+    #         return buffer, None
+    #
+    #     except KeyboardInterrupt:
+    #         # Handle cancellation gracefully
+    #         logger.info("Query cancelled by user")
+    #         if stream:
+    #             stream.close()
+    #         return display_buffer, None
+    #     except Exception as e:
+    #         logger.error(f"Error in stream processing: {e}")
+    #         if stream:
+    #             stream.close()
+    #         return display_buffer, None
+    #
+
     def process_stream(self, stream) -> tuple[str, MCPMessage | None | dict]:
-        """
-        Process LLM stream, looking for MCP requests and special answer tags.
-        """
         buffer = ""
+        display_buffer = ""  # Separate buffer for what we've already displayed
 
-        for chunk in stream:
-            content = str(chunk.choices[0].delta.content)
-            if content:
-                # Print the content to console if available
-                if self.console:
-                    # Use rich console to print content without newlines
-                    # This allows for streaming output in real-time
-                    if buffer:
-                        # If there's existing buffer, print it first
-                        print(buffer, end="")
-                    # Print the new content chunk
-            buffer += content
+        try:
+            for chunk in stream:
+                content = str(chunk.choices[0].delta.content)
+                if content:
+                    # Print new content
+                    if self.console:
+                        self.console.print(content, end="")
+                    else:
+                        print(content, end="", flush=True)
 
-            # Look for <answer> tags, if found, return the content
-            if "<answer>" in buffer and "</answer>" in buffer:
-                start_idx = buffer.index("<answer>") + len("<answer>")
-                end_idx = buffer.index("</answer>")
-                answer = buffer[start_idx:end_idx]
-                return buffer, {"answer": answer}
+                    # Add to buffers
+                    buffer += content
+                    display_buffer += content
 
-            # Look for any complete JSON object
-            json_objects = self._find_json_objects(buffer)
+                    # Look for answer tags
+                    if "<answer>" in buffer and "</answer>" in buffer:
+                        start_idx = buffer.index("<answer>") + len("<answer>")
+                        end_idx = buffer.index("</answer>")
+                        answer = buffer[start_idx:end_idx]
+                        return display_buffer, {"answer": answer}
 
-            if json_objects:
-                # For each JSON object found, try to validate it
-                for json_str in json_objects:
-                    try:
-                        json_data = json.loads(json_str)
-                        mcpmessage = parse_request(json_data)
+                    # Look for JSON objects
+                    json_objects = self._find_json_objects(buffer)
+                    if json_objects:
+                        for json_str in json_objects:
+                            try:
+                                json_data = json.loads(json_str)
+                                mcpmessage = parse_request(json_data)
+                                if mcpmessage:
+                                    stream.close()
+                                    return display_buffer, mcpmessage
+                            except json.JSONDecodeError:
+                                continue
 
-                        if mcpmessage:
-                            stream.close()
-                            return buffer, mcpmessage
+        except KeyboardInterrupt:
+            # Handle cancellation gracefully
+            logger.info("Query cancelled by user")
+            if stream:
+                stream.close()
+            return display_buffer, None
+        except Exception as e:
+            logger.error(f"Error in stream processing: {e}")
+            if stream:
+                stream.close()
+            return display_buffer, None
 
-                    except json.JSONDecodeError:
-                        continue
-
-        # If we processed the entire stream without finding valid JSON
-        return buffer, None
+        # Normal completion
+        return display_buffer, None
 
     def _find_json_objects(self, text):
         """
@@ -371,15 +438,21 @@ class MCPChat(Chat):
 
         # Initialize MCP Host for orchestration
         self.host = Host(model=model, console=self.console)
-
-        # Update welcome message to indicate MCP capabilities
-        self.welcome_message = "[green]Hello! This is MCP-enhanced chat. Type /help for commands or /mcp_status for MCP info.[/green]"
-
         # Set system message from MCP capabilities (will be empty initially)
         self._update_system_message()
 
         # Set up any requested servers
         self._setup_servers(server)
+
+        # Generate our welcome message -- we want to greet the user with the capabilities detected.
+        status = self._generate_mcp_status()
+
+        # Update welcome message to indicate MCP capabilities
+        self.welcome_message = (
+            "[green]Hello! This is MCP-enhanced chat. Type /help for commands or /status for MCP info.[/green]"
+            + "\n\n"
+            + status
+        )
 
     def _update_system_message(self):
         """Update system message based on current MCP capabilities."""
@@ -450,6 +523,100 @@ class MCPChat(Chat):
                     self._add_server(server_info)
                     break
 
+    def _generate_mcp_status(self) -> str:
+        """
+        Generate a rich-formatted output string of the MCP status.
+        Added to welcome message + accessable by user through mcp status command.
+        """
+        output = ""
+        if not self.host.clients:
+            output = "[red]No MCP clients connected.[/red]"
+            return output
+
+        # Summary
+        valid_clients = [
+            client for client in self.host.clients if isinstance(client, Client)
+        ]
+        initialized_clients = [client for client in valid_clients if client.initialized]
+
+        output += (
+            f"Clients: {len(initialized_clients)}/{len(valid_clients)} initialized\n\n"
+        )
+        self.console.print()
+
+        # Show each client
+        for client in self.host.clients:
+            if not isinstance(client, Client):
+                output += "[red]Invalid client (NoneType)[/red]\n"
+                continue
+
+            if client.initialized:
+                # Get transport type
+                transport_type = (
+                    type(client.transport).__name__.replace("Transport", "")
+                    if client.transport
+                    else "Unknown"
+                )
+
+                # Get capability counts
+                tools_count = (
+                    len(client.registry.tools) if hasattr(client, "registry") else 0
+                )
+                resources_count = (
+                    len(client.registry.resources) if hasattr(client, "registry") else 0
+                )
+                prompts_count = (
+                    len(client.registry.prompts) if hasattr(client, "registry") else 0
+                )
+
+                # Client header with summary
+                output += f"[bold green]{client.name}[/bold green] ({transport_type}) - [yellow]{tools_count} tools[/yellow], [blue]{resources_count} resources[/blue], [magenta]{prompts_count} prompts[/magenta]\n"
+
+                if hasattr(client, "registry"):
+                    # Tools - just names
+                    if client.registry.tools:
+                        tool_names = [tool.name for tool in client.registry.tools]
+                        output += f"  [yellow]Tools:[/yellow] {', '.join(tool_names)}\n"
+
+                    # Resources - just names
+                    if client.registry.resources:
+                        resource_names = [
+                            resource.name for resource in client.registry.resources
+                        ]
+                        output += (
+                            f"  [blue]Resources:[/blue] {', '.join(resource_names)}\n"
+                        )
+
+                    # Prompts - just names
+                    if client.registry.prompts:
+                        prompt_names = [
+                            prompt.name for prompt in client.registry.prompts
+                        ]
+                        output += (
+                            f"  [magenta]Prompts:[/magenta] {', '.join(prompt_names)}\n"
+                        )
+
+                    if not (
+                        client.registry.tools
+                        or client.registry.resources
+                        or client.registry.prompts
+                    ):
+                        output += "  [dim]No capabilities[/dim]\n"
+
+            else:
+                # Not initialized - grayed out
+                transport_type = (
+                    type(client.transport).__name__.replace("Transport", "")
+                    if client.transport
+                    else "Unknown"
+                )
+                output += (
+                    f"[dim]{client.name} ({transport_type}) - Not initialized[/dim]\n"
+                )
+
+            output += "\n"
+        return output
+
     @property
     def available_servers(self):
         """Return a list of available MCP servers."""
@@ -487,99 +654,10 @@ class MCPChat(Chat):
         return result
 
     # MCP-specific commands
-    def command_mcp_status(self):
+    def command_status(self):
         """Show MCP connection status and capabilities."""
-        if not self.host.clients:
-            self.console.print("No MCP clients connected.", style="yellow")
-            return
-
-        # Summary
-        valid_clients = [
-            client for client in self.host.clients if isinstance(client, Client)
-        ]
-        initialized_clients = [client for client in valid_clients if client.initialized]
-
-        self.console.print(f"[bold]MCP Status[/bold]")
-        self.console.print(
-            f"Clients: {len(initialized_clients)}/{len(valid_clients)} initialized"
-        )
-        self.console.print()
-
-        # Show each client
-        for client in self.host.clients:
-            if not isinstance(client, Client):
-                self.console.print("[red]Invalid client (NoneType)[/red]")
-                continue
-
-            if client.initialized:
-                # Get transport type
-                transport_type = (
-                    type(client.transport).__name__.replace("Transport", "")
-                    if client.transport
-                    else "Unknown"
-                )
-
-                # Get capability counts
-                tools_count = (
-                    len(client.registry.tools) if hasattr(client, "registry") else 0
-                )
-                resources_count = (
-                    len(client.registry.resources) if hasattr(client, "registry") else 0
-                )
-                prompts_count = (
-                    len(client.registry.prompts) if hasattr(client, "registry") else 0
-                )
-
-                # Client header with summary
-                self.console.print(
-                    f"[bold green]{client.name}[/bold green] ({transport_type}) - [yellow]{tools_count} tools[/yellow], [blue]{resources_count} resources[/blue], [magenta]{prompts_count} prompts[/magenta]"
-                )
-
-                if hasattr(client, "registry"):
-                    # Tools - just names
-                    if client.registry.tools:
-                        tool_names = [tool.name for tool in client.registry.tools]
-                        self.console.print(
-                            f"  [yellow]Tools:[/yellow] {', '.join(tool_names)}"
-                        )
-
-                    # Resources - just names
-                    if client.registry.resources:
-                        resource_names = [
-                            resource.name for resource in client.registry.resources
-                        ]
-                        self.console.print(
-                            f"  [blue]Resources:[/blue] {', '.join(resource_names)}"
-                        )
-
-                    # Prompts - just names
-                    if client.registry.prompts:
-                        prompt_names = [
-                            prompt.name for prompt in client.registry.prompts
-                        ]
-                        self.console.print(
-                            f"  [magenta]Prompts:[/magenta] {', '.join(prompt_names)}"
-                        )
-
-                    if not (
-                        client.registry.tools
-                        or client.registry.resources
-                        or client.registry.prompts
-                    ):
-                        self.console.print("  [dim]No capabilities[/dim]")
-
-            else:
-                # Not initialized - grayed out
-                transport_type = (
-                    type(client.transport).__name__.replace("Transport", "")
-                    if client.transport
-                    else "Unknown"
-                )
-                self.console.print(
-                    f"[dim]{client.name} ({transport_type}) - Not initialized[/dim]"
-                )
-
-            self.console.print()  # Empty line between clients
+        output = self._generate_mcp_status()
+        self.console.print(output)
 
     def command_list_tools(self):
         """List available MCP tools."""
