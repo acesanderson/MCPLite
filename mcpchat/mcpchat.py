@@ -7,7 +7,8 @@ MCP agent capabilities under the hood.
 from Chain import Message, Model, MessageStore, Chat
 from pathlib import Path
 from MCPLite.logs.logging_config import get_logger, configure_logging, logging
-from MCPLite.host import Host
+from MCPLite.host.Host import Host
+from rich.markdown import Markdown
 
 # Get logger with this module's name
 logger = get_logger(__name__)
@@ -31,30 +32,24 @@ class MCPChat(Chat):
 
     def __init__(
         self,
+        servers: list[str],
         model: str = "gpt",
-        server: list | str = "",
         preferred_transport: str = "stdio",
         **kwargs,
     ):
         # Initialize Chat parent class
         super().__init__(model=Model(model), **kwargs)
 
-        # Our preferred transport type for MCP servers -- if multiple are available for a server, we will use this one.
+        # Initial variables
+        self.servers = servers
+        self.model = model
         self.preferred_transport = preferred_transport
 
         # Initialize MCP Host for orchestration
-        self.host = Host(model=model, console=self.console)
-
-        # Set system message from MCP capabilities (will be empty initially)
-        self._update_system_message()
-
-        # Set up any requested servers
-        self._setup_servers(server)
-
-        # Generate our welcome message -- we want to greet the user with the capabilities detected.
-        status = self._generate_mcp_status()
+        self.host = Host(model=model, servers=self.servers, console=self.console)
 
         # Update welcome message to indicate MCP capabilities
+        status = self.host._generate_mcp_status()
         self.welcome_message = (
             "[green]Hello! This is MCP-enhanced chat. Type /help for commands or /status for MCP info.[/green]"
             + "\n\n"
@@ -64,7 +59,7 @@ class MCPChat(Chat):
     @property
     def available_servers(self):
         """Return a list of available MCP servers."""
-        self.serverinventory.view_servers(self.console)
+        self.host.serverinventory.view_servers(self.console)
 
     def query_model(self, input: list[Message]) -> str | None:
         """
@@ -100,7 +95,7 @@ class MCPChat(Chat):
     # MCP-specific commands
     def command_status(self):
         """Show MCP connection status and capabilities."""
-        output = self._generate_mcp_status()
+        output = self.host._generate_mcp_status()
         self.console.print(output)
 
     def command_list_tools(self):
@@ -141,7 +136,7 @@ class MCPChat(Chat):
     def command_run_prompt(self, prompt_name: str):
         """Run an MCP prompt by name."""
         try:
-            result = self.host.run_prompt(prompt_name)
+            result = self.host._run_prompt(prompt_name)
             self.console.print("Prompt Result:", style="bold green")
             self.console.print(Markdown(result))
         except Exception as e:
@@ -150,12 +145,12 @@ class MCPChat(Chat):
     # MCP client management commands
     def command_list_servers(self):
         """List available MCP servers."""
-        if not self.serverinventory.servers:
+        if not self.host.serverinventory.servers:
             self.console.print("No MCP servers available.", style="yellow")
             return
 
         self.console.print("Available MCP Servers:", style="bold green")
-        self.serverinventory.view_servers(self.console)
+        self.host.serverinventory.view_servers(self.console)
 
     def command_add_client(self, client_info: str):
         """Add an MCP client. Usage: /add client <description>"""
@@ -175,8 +170,7 @@ class MCPChat(Chat):
         )
 
         # Regenerate system prompt
-        self.host.system_prompt = self.host.generate_system_prompt()
-        self._update_system_message()
+        self.host._update_system_message()
 
         new_count = (
             len(self.host.registry.tools)

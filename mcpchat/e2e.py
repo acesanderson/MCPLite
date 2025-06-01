@@ -9,7 +9,7 @@ from mcpchat import MCPChat
 def main():
     """Example usage of MCPChat."""
     # Create MCP Chat instance
-    chat = MCPChat(model="gpt", server=["fetch", "obsidian"])
+    chat = MCPChat(model="gpt", servers=["fetch", "obsidian"])
 
     # Start the chat
     chat.chat()
