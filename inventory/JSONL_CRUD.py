@@ -8,6 +8,7 @@ import json
 from MCPLite.inventory.ServerInfo import (
     ServerInfo,
 )
+from pydantic import ValidationError
 
 # Constants
 inventory_file = Path(__file__).parent / "available_servers.jsonl"
@@ -23,16 +24,26 @@ def load_inventory() -> list[ServerInfo]:
     if not inventory_file.exists() or inventory_file.read_text().strip() == "":
         return []
 
-    with inventory_file.open("r") as file:
-        servers = []
-        for line in file:
-            if line.strip():
-                try:
-                    server_data = json.loads(line.strip())
-                    servers.append(ServerInfo(**server_data))
-                except json.JSONDecodeError:
-                    print(f"Error decoding JSON line: {line.strip()}")
+    try:
+        with inventory_file.open("r") as file:
+            servers = []
+            for line in file:
+                if line.strip():
+                    try:
+                        server_data = json.loads(line.strip())
+                        servers.append(ServerInfo(**server_data))
+                    except json.JSONDecodeError:
+                        print(f"Error decoding JSON line: {line.strip()}")
         return servers
+    except FileNotFoundError:
+        print(f"Inventory file not found: {inventory_file}")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON file: {e}")
+        return []
+    except ValidationError as e:
+        print(f"Validation error, did you update your Pydantic models? {e}")
+        return []
 
 
 def save_inventory(servers: list[ServerInfo]) -> None:

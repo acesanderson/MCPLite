@@ -14,6 +14,7 @@ from MCPLite.inventory.JSONL_CRUD import (
     save_inventory,
 )
 from rich.console import Console
+from pydantic import ValidationError
 
 
 console = Console()
@@ -49,23 +50,20 @@ class ServerInventory:
     def _update_servers(self) -> list[ServerInfo]:
         """
         Retrieves the list of servers from the server directory.
+        In future, expand to other directories and transports.
         """
         file_paths = server_directory.glob("*.py")
         file_paths = list(file_paths)
         servers = []
-        # Add stdio servers for each Python file in the server directory
         for file_path in file_paths:
             name = file_path.stem
-            address = StdioServerAddress(commands=["python", str(file_path)])
-            server_info = ServerInfo(name=name, address=address)
-            servers.append(server_info)
-        # Add those same servers as DirectTransport
-        for file_path in file_paths:
-            name = file_path.stem
-            address = DirectServerAddress(
+            stdio_address = StdioServerAddress(commands=["python", str(file_path)])
+            direct_address = DirectServerAddress(
                 import_statement=f"from MCPLite.servers.{file_path.stem} import mcp"
             )
-            server_info = ServerInfo(name=name, address=address)
+            server_info = ServerInfo(
+                name=name, addresses=[stdio_address, direct_address]
+            )
             servers.append(server_info)
         # TBD: Add HTTP/SSE servers
         return servers
@@ -86,8 +84,11 @@ class ServerInventory:
         """
         console.print("\n")
         for server in self.servers:
+            transports = ", ".join(
+                [address.transport_type for address in server.addresses]
+            )
             console.print(
-                f"[bold green]Server Name:[/bold green][green] {server.name}[/green]\n[bold yellow]Description: [/bold yellow][yellow]{server.description}[/yellow]\n"
+                f"[green]Server Name:[/green][bold green] {server.name}[/bold green] [white]({transports})\n[bold yellow]Description: [/bold yellow][yellow]{server.description}[/yellow]\n"
             )
 
 

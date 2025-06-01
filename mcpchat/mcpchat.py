@@ -372,12 +372,22 @@ class MCPChat(Chat):
 
     serverinventory: ServerInventory = ServerInventory()
 
-    def __init__(self, model: str = "gpt", server: list | str = "", **kwargs):
+    def __init__(
+        self,
+        model: str = "gpt",
+        server: list | str = "",
+        preferred_transport: str = "stdio",
+        **kwargs,
+    ):
         # Initialize Chat parent class
         super().__init__(model=Model(model), **kwargs)
 
+        # Our preferred transport type for MCP servers -- if multiple are available for a server, we will use this one.
+        self.preferred_transport = preferred_transport
+
         # Initialize MCP Host for orchestration
         self.host = Host(model=model, console=self.console)
+
         # Set system message from MCP capabilities (will be empty initially)
         self._update_system_message()
 
@@ -401,49 +411,48 @@ class MCPChat(Chat):
                 role="system", content=self.host.system_prompt
             )
 
-    def _add_server(self, server: ServerInfo):
+    def _add_server(self, server_info: ServerInfo):
         """
         Add a single MCP server to Host's client list.
         This should parse by different transport types (e.g., Stdio, HTTP) and then create the right clients to sent to host's add_client method.
         """
-        if isinstance(server, ServerInfo):
-            match server.address:
+        # A reminder of the expected server_info structure:
+        address: StdioServerAddress | DirectServerAddress | SSEServerAddress | list = (
+            server_info.address
+        )
+        # If we have multiple addresses, prioritize the preferred transport type.
+        if isinstance(address, list):
+            # Filter by preferred transport type
+            address = [
+                addr
+                for addr in address
+                if addr.transport_type == self.preferred_transport
+            ]
+            if not address:
+                address = address[0]  # Fallback to first available if none match
+        # Now add the client according to the address type
+        try:
+            match server_info.address:
                 case StdioServerAddress():
                     # Create a Stdio client
-                    client = Client(
-                        name=server.name,
-                        transport=StdioClientTransport(server.address.commands),
-                    )
+                    client = server_info.address._get_client()
+                    self.host.add_client(client)
+                    self._update_system_message()  # Update with new capabilities
+
+                case DirectServerAddress():
+                    # Create a Direct transport client
+                    client = server_info.address._get_client()
                     self.host.add_client(client)
                     self._update_system_message()  # Update with new capabilities
 
                 case SSEServerAddress():
+                    # Create an SSE transport client
                     raise NotImplementedError(
                         "SSE transport is not yet implemented in MCPChat."
                     )
-                case DirectServerAddress():
-                    # Create a Direct transport client
-                    import_statement = server.address.import_statement
-                    # Execute the import statement to get the server function
-                    if import_statement:
-                        # Assuming import_statement is a callable function that can be used directly as a server function
-                        if isinstance(import_statement, str):
-                            try:
-                                # If it's a string, assume it's a path to a server function
-                                server_function = __import__(import_statement)
-                                client = Client(
-                                    name=server.name,
-                                    transport=DirectTransport(server_function),
-                                )
-                                self.host.add_client(client)
-                                self._update_system_message()  # Update with new capabilities
-                            except ImportError as e:
-                                raise ImportError(
-                                    f"Failed to import server function from '{import_statement}': {str(e)}"
-                                )
-
-        else:
-            raise ValueError("Server must be an instance of ServerInfo.")
+        except Exception as e:
+            logger.error(f"Failed to add server {server.name}: {e}")
+            raise ValueError(f"Failed to add server {server.name}: {e}")
 
     def _setup_servers(self, server: list | str):
         """

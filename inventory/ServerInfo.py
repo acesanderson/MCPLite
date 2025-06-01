@@ -1,19 +1,17 @@
+from MCPLite.primitives.MCPRegistry import ClientRegistry
+from MCPLite.transport import StdioClientTransport, DirectTransport
+from MCPLite.client.Client import Client
+from Chain import Chain, Model, Prompt
+from importlib import import_module
 from pydantic import BaseModel, Field
 from typing import Literal
 from pathlib import Path
-from MCPLite.primitives.MCPRegistry import ClientRegistry
-from Chain import Chain, Model, Prompt
 
 # Constants
 ## Directory where server scripts are stored; this is imported by ServerInventory.py
 server_directory = Path.home() / "Brian_Code" / "MCPLite" / "servers"
-## Cache for storing chain results -- we don't want to recreate descriptions every time we access our inventory.
-# cache = ChainCache(
-#     db_name=str(
-#         server_directory / ".chain_cache.db",
-#     )
-# )
-# Model._chain_cache = cache
+
+transport_types = Literal["stdio", "direct", "sse"]
 
 
 # Pydantic classes
@@ -21,7 +19,12 @@ class ServerAddress(BaseModel):
     """
     Represents the address of a server.
     This can be a list of commands for stdio, a URL and port, or a Python import.
+    Contains methods to get a client for the server.
     """
+
+    transport_type: transport_types = Field(
+        description="Type of transport for the server address: 'stdio', 'direct', or 'sse'"
+    )
 
 
 class StdioServerAddress(ServerAddress):
@@ -30,9 +33,18 @@ class StdioServerAddress(ServerAddress):
     Contains a list of commands to start the server.
     """
 
+    transport_type: transport_types = "stdio"  # Override to specify stdio transport
     commands: list[str] = Field(
         description="List of commands to start the server via stdio"
     )
+
+    def _get_client(self):
+        """
+        Get a client for the server using stdio transport.
+        This is used internally to initialize the server and retrieve capabilities.
+        """
+
+        return Client(transport=StdioClientTransport(self.commands))
 
 
 class DirectServerAddress(ServerAddress):
@@ -41,9 +53,32 @@ class DirectServerAddress(ServerAddress):
     Contains a Python import path to the server.
     """
 
+    transport_type: transport_types = "direct"  # Override to specify direct transport
     import_statement: str = Field(
         description="Python import statement to import the server, e.g., 'from mymodule import MyServer'"
     )
+
+    def _get_client(self):
+        """
+        Get a client for the server using direct transport.
+        This is used internally to initialize the server and retrieve capabilities.
+        """
+
+        # Parse the import statement
+        if not self.import_statement.startswith("from "):
+            raise ValueError("Import statement must start with 'from'")
+
+        parts = self.import_statement.split(" import ")
+        if len(parts) != 2:
+            raise ValueError("Invalid import statement format")
+
+        module_name = parts[0].replace("from ", "").strip()
+        object_name = parts[1].strip()
+
+        module = import_module(module_name)
+        mcp_instance = getattr(module, object_name)
+
+        return Client(transport=DirectTransport(mcp_instance.server.process_message))
 
 
 class SSEServerAddress(ServerAddress):
@@ -52,8 +87,18 @@ class SSEServerAddress(ServerAddress):
     Contains a URL and port to connect to the server.
     """
 
+    transport_type: transport_types = "sse"  # Override to specify SSE transport
+
     url: str = Field(description="URL of the server")
     port: int = Field(description="Port of the server")
+
+    def _get_client(self):
+        """
+        Get a client for the server using SSE transport.
+        This is used internally to initialize the server and retrieve capabilities.
+        """
+        # For SSE, we would need to implement a specific client for SSE transport.
+        raise NotImplementedError("SSE transport is not yet implemented.")
 
 
 # Our main ServerInfo class
@@ -65,8 +110,10 @@ class ServerInfo(BaseModel):
     """
 
     name: str = Field(description="Name of the server -- first half of the file name")
-    address: StdioServerAddress | DirectServerAddress | SSEServerAddress = Field(
-        description="Address of the server, either as a list of commands for stdio, a URL and port, or as a Python import",
+    addresses: list[StdioServerAddress | DirectServerAddress | SSEServerAddress] = (
+        Field(
+            description="List of addresses for the server, each with its own transport type",
+        )
     )
 
     # Generated post-init
@@ -97,88 +144,68 @@ class ServerInfo(BaseModel):
         self.available = True
 
     @property
-    def transport(self) -> Literal["stdio", "direct", "sse"]:
-        match self.address:
-            case StdioServerAddress():
-                return "stdio"
-            case DirectServerAddress():
-                return "direct"
-            case SSEServerAddress():
-                return "sse"
-            case _:
-                raise ValueError("Unknown server address type")
+    def transport_types(self) -> list[transport_types]:
+        """
+        TBD as I am rearchitecting addresses to be a list of ServerAddress objects.
+        """
+        return [address.transport_type for address in self.addresses]
 
-    def _get_capabilities(self):
+    def _get_capabilities(self) -> ClientRegistry | None:
         """
         Retrieve the capabilities of the server.
         This serves as both a test of the server's functionality and a way to generate the description.
         """
-        from MCPLite.client.Client import Client
+        # Grab each registry and compare them.
+        client_registries = []
+        if "stdio" in self.transport_types:
+            address = [
+                addr for addr in self.addresses if addr.transport_type == "stdio"
+            ][0]
+            if not address:
+                raise ValueError("No stdio address found for the server.")
+            client = address._get_client()
+            client.initialize()
+            if client.initialized:
+                print("Server initialized successfully.")
+                client_registries.append(client.registry)
+            else:
+                raise RuntimeError(
+                    "Failed to initialize the server via stdio transport."
+                )
+        if "direct" in self.transport_types:
+            address = [
+                addr for addr in self.addresses if addr.transport_type == "direct"
+            ][0]
+            if not address:
+                raise ValueError("No direct address found for the server.")
+            client = address._get_client()
+            client.initialize()
+            if client.initialized:
+                print("Server initialized successfully.")
+                client_registries.append(client.registry)
+            else:
+                raise RuntimeError(
+                    "Failed to initialize the server via direct transport."
+                )
 
-        match self.transport:
-            case "stdio":
-                # For stdio, we need to start the server and send an initialization request.
-                from MCPLite.transport import StdioClientTransport
+        if "sse" in self.transport_types:
+            raise NotImplementedError("SSE transport is not yet implemented.")
 
-                client = Client(transport=StdioClientTransport(self.address.commands))
-                client.initialize()
-                if client.initialized:
-                    print("Server initialized successfully.")
-                    return client.registry
-                else:
-                    raise RuntimeError(
-                        "Failed to initialize the server via stdio transport."
-                    )
-            case "direct":
-                # For direct transport, we import the MCP instance and get its server's process_message method
-                if not isinstance(self.address, DirectServerAddress):
-                    raise TypeError(
-                        "DirectServerAddress expected for direct transport."
-                    )
-
-                # Parse the import statement: "from MCPLite.servers.fetch import mcp"
-                import_statement = self.address.import_statement
-                if not import_statement.startswith("from "):
+        # If we have multiple registries, compare them to catch any discrepancies.
+        # If no error captured, return the first registry.
+        if len(client_registries) == 0:
+            raise RuntimeError("No capabilities retrieved from the server.")
+        if len(client_registries) == 1:
+            return client_registries[0]
+        if len(client_registries) > 1:
+            # Compare the registries to ensure they are consistent.
+            first_registry = client_registries[0]
+            for registry in client_registries[1:]:
+                if first_registry != registry:
                     raise ValueError(
-                        "DirectServerAddress import_statement must start with 'from'"
+                        "Inconsistent capabilities retrieved from the server."
                     )
-
-                from importlib import import_module
-
-                # Split: "from MCPLite.servers.fetch import mcp" -> module="MCPLite.servers.fetch", obj="mcp"
-                parts = import_statement.split(" import ")
-                if len(parts) != 2:
-                    raise ValueError("Invalid import statement format")
-
-                module_name = parts[0].replace("from ", "").strip()
-                object_name = parts[1].strip()
-
-                # Import the module and get the object
-                module = import_module(module_name)
-                mcp_instance = getattr(module, object_name)
-
-                # Get the server's process_message method (not calling it!)
-                server_function = mcp_instance.server.process_message
-
-                # Create client with DirectTransport
-                from MCPLite.transport import DirectTransport
-
-                client = Client(transport=DirectTransport(server_function))
-
-                client.initialize()
-                if client.initialized:
-                    print("Server initialized successfully.")
-                    return client.registry
-                else:
-                    raise RuntimeError(
-                        "Failed to initialize the server via direct transport."
-                    )
-
-            case "sse":
-                # For SSE, we would need to implement a specific client for SSE transport.
-                raise NotImplementedError("SSE transport is not yet implemented.")
-            case _:
-                raise ValueError("Unknown server address type")
+            return first_registry
 
     def _generate_description(self):
         """
@@ -199,18 +226,4 @@ class ServerInfo(BaseModel):
         response = chain.run(input_variables={"capabilities": self.capabilities})
         if not response:
             raise RuntimeError("Failed to generate server description.")
-        return response.content.strip()
-
-
-if __name__ == "__main__":
-    # Example usage
-    server_path = server_directory / "fetch.py"
-    print(server_path)
-    server_info = ServerInfo(
-        name="fetch",
-        address=StdioServerAddress(commands=["python", str(server_path)]),
-    )
-    print(server_info)
-    print(server_info.transport)
-    print(server_info.capabilities)
-    print(server_info.description)
+        return str(response.content).strip()
