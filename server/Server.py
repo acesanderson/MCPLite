@@ -53,6 +53,7 @@ class Server:
     def process_message(self, json_str: Json) -> Json:
         """
         Receive JSON from the client, parse it, and return a response.
+        This is the "server" function that is directly accessed when using DirectTransport.
         """
         logger.info(f"Server received JSON: {json_str}")
 

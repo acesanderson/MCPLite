@@ -94,66 +94,6 @@ class Host:
         rendered = system_prompt.render(input_variables)
         return rendered
 
-    # def process_stream(self, stream) -> tuple[str, MCPMessage | None | dict]:
-    #     """
-    #     Process LLM stream, looking for MCP requests and special answer tags.
-    #     """
-    #     buffer = ""
-    #
-    #     try:
-    #         for chunk in stream:
-    #             content = str(chunk.choices[0].delta.content)
-    #             if content:
-    #                 # Print the content to console if available
-    #                 if self.console:
-    #                     # Use rich console to print content without newlines
-    #                     # This allows for streaming output in real-time
-    #                     if buffer:
-    #                         # If there's existing buffer, print it first
-    #                         print(buffer, end="")
-    #                     # Print the new content chunk
-    #             buffer += content
-    #
-    #             # Look for <answer> tags, if found, return the content
-    #             if "<answer>" in buffer and "</answer>" in buffer:
-    #                 start_idx = buffer.index("<answer>") + len("<answer>")
-    #                 end_idx = buffer.index("</answer>")
-    #                 answer = buffer[start_idx:end_idx]
-    #                 return buffer, {"answer": answer}
-    #
-    #             # Look for any complete JSON object
-    #             json_objects = self._find_json_objects(buffer)
-    #
-    #             if json_objects:
-    #                 # For each JSON object found, try to validate it
-    #                 for json_str in json_objects:
-    #                     try:
-    #                         json_data = json.loads(json_str)
-    #                         mcpmessage = parse_request(json_data)
-    #
-    #                         if mcpmessage:
-    #                             stream.close()
-    #                             return buffer, mcpmessage
-    #
-    #                     except json.JSONDecodeError:
-    #                         continue
-    #
-    #         # If we processed the entire stream without finding valid JSON
-    #         return buffer, None
-    #
-    #     except KeyboardInterrupt:
-    #         # Handle cancellation gracefully
-    #         logger.info("Query cancelled by user")
-    #         if stream:
-    #             stream.close()
-    #         return display_buffer, None
-    #     except Exception as e:
-    #         logger.error(f"Error in stream processing: {e}")
-    #         if stream:
-    #             stream.close()
-    #         return display_buffer, None
-    #
-
     def process_stream(self, stream) -> tuple[str, MCPMessage | None | dict]:
         buffer = ""
         display_buffer = ""  # Separate buffer for what we've already displayed

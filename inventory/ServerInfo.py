@@ -130,13 +130,41 @@ class ServerInfo(BaseModel):
                         "Failed to initialize the server via stdio transport."
                     )
             case "direct":
-                # For direct transport, we import the server and initialize it.
+                # For direct transport, we import the MCP instance and get its server's process_message method
+                if not isinstance(self.address, DirectServerAddress):
+                    raise TypeError(
+                        "DirectServerAddress expected for direct transport."
+                    )
+
+                # Parse the import statement: "from MCPLite.servers.fetch import mcp"
+                import_statement = self.address.import_statement
+                if not import_statement.startswith("from "):
+                    raise ValueError(
+                        "DirectServerAddress import_statement must start with 'from'"
+                    )
+
                 from importlib import import_module
 
-                module_name, class_name = self.address.import_statement.rsplit(".", 1)
+                # Split: "from MCPLite.servers.fetch import mcp" -> module="MCPLite.servers.fetch", obj="mcp"
+                parts = import_statement.split(" import ")
+                if len(parts) != 2:
+                    raise ValueError("Invalid import statement format")
+
+                module_name = parts[0].replace("from ", "").strip()
+                object_name = parts[1].strip()
+
+                # Import the module and get the object
                 module = import_module(module_name)
-                server_class = getattr(module, class_name)
-                client = Client(transport=server_class())
+                mcp_instance = getattr(module, object_name)
+
+                # Get the server's process_message method (not calling it!)
+                server_function = mcp_instance.server.process_message
+
+                # Create client with DirectTransport
+                from MCPLite.transport import DirectTransport
+
+                client = Client(transport=DirectTransport(server_function))
+
                 client.initialize()
                 if client.initialized:
                     print("Server initialized successfully.")
@@ -145,6 +173,7 @@ class ServerInfo(BaseModel):
                     raise RuntimeError(
                         "Failed to initialize the server via direct transport."
                     )
+
             case "sse":
                 # For SSE, we would need to implement a specific client for SSE transport.
                 raise NotImplementedError("SSE transport is not yet implemented.")

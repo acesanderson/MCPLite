@@ -7,6 +7,7 @@ from MCPLite.inventory.ServerInfo import (
     ServerInfo,
     server_directory,
     StdioServerAddress,
+    DirectServerAddress,
 )
 from MCPLite.inventory.JSONL_CRUD import (
     load_inventory,
@@ -52,11 +53,21 @@ class ServerInventory:
         file_paths = server_directory.glob("*.py")
         file_paths = list(file_paths)
         servers = []
+        # Add stdio servers for each Python file in the server directory
         for file_path in file_paths:
             name = file_path.stem
             address = StdioServerAddress(commands=["python", str(file_path)])
             server_info = ServerInfo(name=name, address=address)
             servers.append(server_info)
+        # Add those same servers as DirectTransport
+        for file_path in file_paths:
+            name = file_path.stem
+            address = DirectServerAddress(
+                import_statement=f"from MCPLite.servers.{file_path.stem} import mcp"
+            )
+            server_info = ServerInfo(name=name, address=address)
+            servers.append(server_info)
+        # TBD: Add HTTP/SSE servers
         return servers
 
     def get_server(self, name: str, console: Console = console) -> ServerInfo | None:
