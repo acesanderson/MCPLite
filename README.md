@@ -1,190 +1,244 @@
-Model: claude-sonnet-4-20250514  Temperature: None  Query: # README.md Generation Prompt  You are an expert technical w...
 # MCPLite
 
-[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/MCPLite)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://python.org)
 
-**A lightweight, developer-friendly Python implementation of the Model Context Protocol (MCP) that makes it easy to connect AI assistants to external tools and data sources.**
+**A lightweight, pythonic implementation of the Model Context Protocol (MCP) for seamless integration of external tools and data sources into LLM applications.**
 
-MCPLite provides a clean, FastAPI-inspired interface for creating MCP servers and an intelligent host system for orchestrating multiple servers in AI agent workflows.
+MCPLite provides everything you need to build, connect, and orchestrate MCP servers with a clean, decorator-based API inspired by FastAPI. Turn any Python function into an MCP tool, resource, or prompt with just a decorator.
 
 ## Quick Start
-
-**Create an MCP server in 30 seconds:**
 
 ```python
 from MCPLite import MCPLite
 
-mcp = MCPLite()
+# Create your MCP server
+mcp = MCPLite(transport="stdio")
 
 @mcp.tool
-def add_numbers(a: int, b: int) -> int:
-    """Add two numbers together."""
-    return a + b
+def calculator(operation: str, a: int, b: int) -> int:
+    """Perform basic math operations."""
+    if operation == "add":
+        return a + b
+    elif operation == "multiply":
+        return a * b
+    raise ValueError(f"Unknown operation: {operation}")
 
-@mcp.resource(uri="data://example")
-def get_data() -> str:
-    """Get some example data."""
-    return "Hello from MCPLite!"
+@mcp.resource(uri="data://current-time")
+def current_time() -> str:
+    """Get the current time."""
+    from datetime import datetime
+    return datetime.now().isoformat()
 
 if __name__ == "__main__":
     mcp.run()
 ```
 
-**Use the intelligent chat interface:**
+**Start using it immediately:**
+```bash
+# Install dependencies
+pip install pydantic rich chain-of-thought beautifulsoup4 markdownify
 
-```python
-from MCPLite import MCPChat
+# Run your server
+python my_server.py
 
-# Connect to multiple MCP servers with one line
-chat = MCPChat(model="gpt", servers=["fetch", "obsidian"])
-chat.chat()  # Start interactive session
+# Or use our pre-built servers
+python -m MCPLite.servers.fetch
 ```
 
 ## Core Value Demonstration
 
-MCPLite shines in **multi-server agent workflows** where you need to combine capabilities from different sources:
+MCPLite excels at bridging the gap between language models and external capabilities. Here's a complete example showing tool creation, client connection, and agent orchestration:
 
 ```python
 from MCPLite.host import Host
+from MCPLite.mcpchat import MCPChat
 
-# Orchestrate multiple MCP servers
-host = Host(model="gpt", servers=["fetch", "filesystem", "calculator"])
+# 1. Quick server setup with multiple capabilities
+mcp = MCPLite(transport="direct")
 
-# Ask complex questions that require multiple tools
+@mcp.tool
+def web_search(query: str, limit: int = 3) -> str:
+    """Search the web and return results."""
+    # Your search implementation
+    return f"Found {limit} results for: {query}"
+
+@mcp.resource(uri="weather://current/{city}")
+def get_weather(city: str) -> str:
+    """Get current weather for a city."""
+    return f"Weather in {city}: 72°F, sunny"
+
+# 2. Instant client connection and capability discovery
+host = Host(model="gpt-4", servers=["fetch", "filesystem"])
+
+# 3. Natural language interaction with automatic tool routing
 result = host.agent_query(
-    "Fetch the latest Python release notes, save them to a file, "
-    "and calculate how many days since the last release"
+    "What's the weather in San Francisco and find recent news about AI?"
 )
-```
 
-**What makes this powerful:**
-- **Automatic capability discovery** - The host finds and aggregates all available tools/resources
-- **Intelligent routing** - Requests automatically go to the right server
-- **Agent loop handling** - Multi-step tool usage works seamlessly
-- **Transport abstraction** - Same code works with stdio, direct, or HTTP transports
+# 4. Or use the interactive chat interface
+chat = MCPChat(model="claude", servers=["fetch", "obsidian"])
+chat.chat()  # Starts interactive session with rich formatting
+```
 
 ## Installation & Setup
 
-**Install MCPLite:**
 ```bash
-pip install mcplite  # When published
-# Or for development:
-git clone https://github.com/yourusername/MCPLite.git
-cd MCPLite
-pip install -e .
+# Core installation
+pip install pydantic rich
+
+# For web functionality
+pip install requests beautifulsoup4 markdownify
+
+# For stdio transport (recommended)
+pip install chain-of-thought  # Our LLM integration layer
 ```
 
-**Basic usage patterns:**
+**Environment Setup:**
+```bash
+# For Obsidian integration
+export OBSIDIAN_PATH="/path/to/your/obsidian/vault"
 
-```python
-# 1. Create servers with decorators (FastAPI-style)
-from MCPLite import MCPLite
-
-mcp = MCPLite()
-
-@mcp.tool
-def my_tool(param: str) -> str:
-    """Tool description here."""
-    return f"Processed: {param}"
-
-# 2. Use the chat interface
-from MCPLite import MCPChat
-chat = MCPChat(servers=["my_server"])
-chat.chat()
-
-# 3. Orchestrate programmatically
-from MCPLite.host import Host
-host = Host(servers=["server1", "server2"])
-result = host.agent_query("Your question here")
+# For advanced logging
+export MCPLITE_LOG_LEVEL="DEBUG"
 ```
 
 ## Architecture Overview
 
-MCPLite implements a clean separation between **servers** (capability providers) and **hosts** (orchestrators):
+MCPLite follows a clean separation of concerns:
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   AI Assistant  │────│   MCPLite Host   │────│   MCP Servers   │
-│   (GPT, Claude) │    │   (Orchestrator) │    │   (Tools/Data)  │
+│   MCPChat/Host  │    │   MCPLite Core   │    │  MCP Servers    │
+│  (Orchestration)│◄──►│   (Framework)    │◄──►│  (Your Tools)   │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         │              ┌────────▼────────┐              │
+         │              │    Transport    │              │
+         │              │ (stdio/direct)  │              │
+         └──────────────┤                 ├──────────────┘
+                        └─────────────────┘
 ```
 
 **Key Components:**
-- **MCPLite**: FastAPI-inspired server creation with decorators
-- **Host**: Intelligent orchestration engine for multi-server workflows  
-- **Transport Layer**: Supports stdio, direct (in-process), and HTTP/SSE
-- **MCPChat**: Ready-to-use chat interface with MCP capabilities
+- **MCPLite**: Server framework with decorators for tools/resources/prompts
+- **Host**: Client orchestration engine for multi-server coordination  
+- **MCPChat**: Interactive chat interface with rich formatting
+- **Transport**: Pluggable communication layer (stdio, direct, SSE)
 
 ## Basic Usage
 
-**Define tools, resources, and prompts:**
-
+### Server Creation
 ```python
 from MCPLite import MCPLite
 
-mcp = MCPLite()
+mcp = MCPLite(transport="stdio")
 
 @mcp.tool
-def fetch_weather(city: str) -> str:
-    """Get weather for a city."""
-    # Your weather API logic here
-    return f"Sunny and 72°F in {city}"
-
-@mcp.resource(uri="config://settings")
-def get_settings() -> str:
-    """Application configuration."""
-    return "debug=true, api_key=hidden"
+def analyze_code(code: str, language: str) -> str:
+    """Analyze code for potential issues."""
+    return f"Analyzed {len(code)} chars of {language} code"
 
 @mcp.prompt
-def analysis_prompt(data: str) -> str:
-    """Generate analysis prompt."""
-    return f"Please analyze this data: {data}"
+def code_review_prompt(code: str) -> str:
+    """Generate a code review prompt."""
+    return f"Please review this code:\n\n{code}"
 ```
 
-**Resource templates with parameters:**
-
+### Client Integration
 ```python
-@mcp.resource(uri="todos://items/{date}")
-def get_todos(date: str) -> str:
-    """Get todos for a specific date."""
-    return f"Todos for {date}: Buy groceries, Walk dog"
+from MCPLite.host import Host
+
+# Connect to multiple servers
+host = Host(
+    model="gpt-4",
+    servers=["fetch", "filesystem", "my-custom-server"]
+)
+
+# Natural language queries automatically route to appropriate tools
+response = host.agent_query(
+    "Read the README.md file and summarize the project structure"
+)
+```
+
+### Interactive Chat
+```python
+from MCPLite.mcpchat import MCPChat
+
+chat = MCPChat(
+    model="claude-3",
+    servers=["fetch", "obsidian"],
+    preferred_transport="stdio"
+)
+
+# Rich interactive interface with:
+# - Syntax highlighting
+# - MCP capability display  
+# - Real-time tool execution
+# - Conversation history
+chat.chat()
+```
+
+## Built-in Servers
+
+### Fetch Server
+Web content retrieval with automatic markdown conversion:
+```python
+# Automatically converts HTML to clean markdown
+# Respects robots.txt and rate limits
+# Supports proxy configuration
+python -m MCPLite.servers.fetch
+```
+
+### Obsidian Server  
+Secure filesystem operations within your Obsidian vault:
+```python
+# Sandboxed file operations
+# Search across notes with patterns
+# Metadata extraction and analysis
+export OBSIDIAN_PATH="/path/to/vault"
+python -m MCPLite.servers.obsidian
 ```
 
 ## Contributing
 
-We welcome contributions! MCPLite is designed to be:
+MCPLite is designed for extensibility. Create custom servers by implementing the decorator pattern:
 
-- **Beginner-friendly**: Clear patterns, good documentation
-- **Production-ready**: Robust error handling, comprehensive testing
-- **Extensible**: Easy to add new transports and capabilities
+```python
+from MCPLite import MCPLite
 
-**Development setup:**
-```bash
-git clone https://github.com/yourusername/MCPLite.git
-cd MCPLite
-pip install -e ".[dev]"
-pytest  # Run tests
+mcp = MCPLite(transport="stdio")
+
+@mcp.tool
+def your_custom_tool(param: str) -> str:
+    """Your tool description here."""
+    return f"Processed: {param}"
 ```
 
-**Key areas for contribution:**
-- Additional transport implementations (WebSocket, etc.)
-- More built-in server examples
-- Enhanced debugging and monitoring tools
-- Documentation and tutorials
+**Development Setup:**
+```bash
+git clone https://github.com/yourusername/MCPLite
+cd MCPLite
+pip install -e .
+```
 
-## Support & Maintenance
+## Support & Documentation
 
-- **Status**: Active development, production-ready core
-- **Python**: 3.9+ supported
-- **Dependencies**: Pydantic, Chain framework, Rich (for UI)
-- **License**: MIT
+- **Quick Help**: Use `/status` in MCPChat to see connected capabilities
+- **Server Management**: Built-in server inventory and discovery
+- **Transport Options**: stdio (production), direct (development), SSE (web)
+- **Logging**: Comprehensive logging with configurable levels
 
-**Get help:**
-- [Documentation](docs/) - Comprehensive guides and API reference
-- [GitHub Issues](https://github.com/yourusername/MCPLite/issues) - Bug reports and feature requests
-- [Discussions](https://github.com/yourusername/MCPLite/discussions) - Questions and community
+**Example Commands:**
+```bash
+# View available servers
+python -c "from MCPLite.inventory import ServerInventory; ServerInventory().view_servers()"
+
+# Test server connection
+python -m MCPLite.mcpchat --server fetch --model gpt-4
+```
 
 ---
 
-MCPLite makes the Model Context Protocol accessible to Python developers without sacrificing power or flexibility. Start simple with decorators, scale up to multi-server orchestration.
+MCPLite brings the power of the Model Context Protocol to Python developers with zero configuration overhead. Build once, connect everywhere.
