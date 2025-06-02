@@ -63,12 +63,6 @@ dir_path = Path(__file__).parent
 mcpchat_log_path = dir_path.parent / ".mcpchat.log"
 system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
 
-# Configure logging for this module
-configure_logging(
-    log_file=mcpchat_log_path,
-    level=logging.INFO,
-)
-
 
 class Host:
     """

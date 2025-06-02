@@ -9,9 +9,7 @@ from pathlib import Path
 from MCPLite.logs.logging_config import get_logger, configure_logging, logging
 from MCPLite.host.Host import Host
 from rich.markdown import Markdown
-
-# Get logger with this module's name
-logger = get_logger(__name__)
+from MCPLite.inventory.ServerInfo import transport_types
 
 dir_path = Path(__file__).parent
 mcpchat_log_path = dir_path.parent / ".mcpchat.log"
@@ -20,8 +18,11 @@ system_prompt_path = dir_path.parent / "prompts" / "mcp_system_prompt.jinja2"
 # Configure logging for this module
 configure_logging(
     log_file=mcpchat_log_path,
-    level=logging.INFO,
+    level=logging.WARNING,
 )
+
+# Get logger with this module's name
+logger = get_logger(__name__)
 
 
 class MCPChat(Chat):
@@ -34,7 +35,7 @@ class MCPChat(Chat):
         self,
         servers: list[str],
         model: str = "gpt",
-        preferred_transport: str = "stdio",
+        preferred_transport: transport_types = "stdio",
         **kwargs,
     ):
         # Initialize Chat parent class
@@ -46,7 +47,12 @@ class MCPChat(Chat):
         self.preferred_transport = preferred_transport
 
         # Initialize MCP Host for orchestration
-        self.host = Host(model=model, servers=self.servers, console=self.console)
+        self.host = Host(
+            model=model,
+            servers=self.servers,
+            console=self.console,
+            preferred_transport=preferred_transport,
+        )
 
         # Update welcome message to indicate MCP capabilities
         status = self.host._generate_mcp_status()
@@ -185,3 +191,10 @@ class MCPChat(Chat):
             self.console.print(
                 f"Change detected: {old_count} -> {new_count}", style="yellow"
             )
+
+
+if __name__ == "__main__":
+    chat = MCPChat(
+        model="gpt", servers=["fetch", "obsidian"], preferred_transport="direct"
+    )
+    chat.chat()
