@@ -55,6 +55,11 @@ from pathlib import Path
 from typing import Optional
 from MCPLite.logs.logging_config import get_logger, configure_logging, logging
 from rich.console import Console
+from rich.layout import Layout
+from rich.panel import Panel
+from rich.json import JSON
+from rich.text import Text
+import json
 
 # Get logger with this module's name
 logger = get_logger(__name__)
@@ -335,31 +340,248 @@ class Host:
             output += "\n"
         return output
 
+    # Display functions for agent_query
+    def _truncate_for_single_line(self, value, max_length=80):
+        """Truncate a value to fit on a single line."""
+        if value is None:
+            return "null"
+
+        str_value = str(value)
+        # Replace newlines and multiple spaces with single spaces
+        str_value = " ".join(str_value.split())
+
+        if len(str_value) <= max_length:
+            return str_value
+
+        return str_value[: max_length - 3] + "..."
+
+    def _format_mcp_result_for_display(self, result: MCPResult) -> dict:
+        """Format MCP result with truncated values for single-line display."""
+        result_dict = result.model_dump()
+        formatted = {}
+
+        def truncate_recursive(obj, max_depth=3, current_depth=0):
+            if current_depth >= max_depth:
+                return "..."
+
+            if isinstance(obj, dict):
+                return {
+                    k: truncate_recursive(v, max_depth, current_depth + 1)
+                    for k, v in obj.items()
+                }
+            elif isinstance(obj, list):
+                if len(obj) > 5:  # Limit list display
+                    truncated_list = [
+                        truncate_recursive(item, max_depth, current_depth + 1)
+                        for item in obj[:3]
+                    ]
+                    truncated_list.append(f"... +{len(obj)-3} more items")
+                    return truncated_list
+                return [
+                    truncate_recursive(item, max_depth, current_depth + 1)
+                    for item in obj
+                ]
+            else:
+                return self._truncate_for_single_line(obj)
+
+        return truncate_recursive(result_dict)
+
+    def _display_mcp_request(self, request: MCPMessage):
+        """Display MCP request immediately when caught."""
+        request_json = JSON(request.model_dump_json(indent=2))
+        request_panel = Panel(
+            request_json,
+            title="[yellow]MCP Request[/yellow]",
+            border_style="yellow",
+            expand=False,
+            width=60,
+            height=10,
+        )
+
+        # Create layout with just the request on the left, empty right
+        layout = Layout()
+        layout.split_row(
+            Layout(request_panel, name="request", size=60),
+            Layout(
+                Panel(
+                    "Waiting for result...",
+                    title="Result",
+                    border_style="dim",
+                    height=10,
+                ),
+                name="result",
+            ),
+        )
+
+        self.console.print(layout)
+        return layout
+
+    def _update_with_mcp_result(self, layout: Layout, result: MCPResult):
+        """Update the layout with the MCP result on the right side."""
+        # Check if this is an error result
+        is_error = getattr(result, "isError", False)
+
+        # Format result for display
+        formatted_result = self._format_mcp_result_for_display(result)
+
+        # Create the result display
+        result_json = JSON(json.dumps(formatted_result, indent=2))
+
+        if is_error:
+            result_panel = Panel(
+                result_json,
+                title="[red]Error Result[/red]",
+                border_style="red",
+                expand=True,
+                height=10,
+            )
+            style = "red"
+        else:
+            result_panel = Panel(
+                result_json,
+                title="[green]Success Result[/green]",
+                border_style="green",
+                expand=True,
+                height=10,
+            )
+            style = "green"
+
+        # Update the right side of the layout
+        layout["result"].update(result_panel)
+
+        # Re-print the updated layout
+        self.console.print("\n")  # Add some space
+        self.console.print(layout)
+
+    def _truncate_for_single_line(self, value, max_length=80):
+        """Truncate a value to fit on a single line."""
+        if value is None:
+            return "null"
+
+        str_value = str(value)
+        # Replace newlines and multiple spaces with single spaces
+        str_value = " ".join(str_value.split())
+
+        if len(str_value) <= max_length:
+            return str_value
+
+        return str_value[: max_length - 3] + "..."
+
+    def _format_mcp_result_for_display(self, result: MCPResult) -> dict:
+        """Format MCP result with truncated values for single-line display."""
+        result_dict = result.model_dump()
+        formatted = {}
+
+        def truncate_recursive(obj, max_depth=3, current_depth=0):
+            if current_depth >= max_depth:
+                return "..."
+
+            if isinstance(obj, dict):
+                return {
+                    k: truncate_recursive(v, max_depth, current_depth + 1)
+                    for k, v in obj.items()
+                }
+            elif isinstance(obj, list):
+                if len(obj) > 5:  # Limit list display
+                    truncated_list = [
+                        truncate_recursive(item, max_depth, current_depth + 1)
+                        for item in obj[:3]
+                    ]
+                    truncated_list.append(f"... +{len(obj)-3} more items")
+                    return truncated_list
+                return [
+                    truncate_recursive(item, max_depth, current_depth + 1)
+                    for item in obj
+                ]
+            else:
+                return self._truncate_for_single_line(obj)
+
+        return truncate_recursive(result_dict)
+
+    def _display_mcp_request(self, request: MCPMessage):
+        """Display MCP request immediately when caught."""
+        request_json = JSON(request.model_dump_json(indent=2))
+        request_panel = Panel(
+            request_json,
+            title="[yellow]MCP Request[/yellow]",
+            border_style="yellow",
+            expand=False,
+            width=60,
+        )
+
+        # Create layout with just the request on the left, empty right
+        layout = Layout()
+        layout.split_row(
+            Layout(request_panel, name="request", size=60),
+            Layout(
+                Panel("Waiting for result...", title="Result", border_style="dim"),
+                name="result",
+            ),
+        )
+
+        self.console.print(layout)
+        return layout
+
+    def _update_with_mcp_result(self, layout: Layout, result: MCPResult):
+        """Update the layout with the MCP result on the right side."""
+        # Check if this is an error result
+        is_error = getattr(result, "isError", False)
+
+        # Format result for display
+        formatted_result = self._format_mcp_result_for_display(result)
+
+        # Create the result display
+        result_json = JSON(json.dumps(formatted_result, indent=2))
+
+        if is_error:
+            result_panel = Panel(
+                result_json,
+                title="[red]Error Result[/red]",
+                border_style="red",
+                expand=True,
+            )
+            style = "red"
+        else:
+            result_panel = Panel(
+                result_json,
+                title="[green]Success Result[/green]",
+                border_style="green",
+                expand=True,
+            )
+            style = "green"
+
+        # Update the right side of the layout
+        layout["result"].update(result_panel)
+
+        # Re-print the updated layout
+        self.console.print("\n")  # Add some space
+        self.console.print(layout)
+
     # Our query logic, handling both streaming and MCP requests
     def _process_stream(self, stream) -> tuple[str, MCPMessage | None | dict]:
         buffer = ""
-
-        # Show initial thinking
-        self.console.print("🤔 [dim]Thinking...[/dim]")
+        display_buffer = ""  # Separate buffer for what we've already displayed
 
         try:
             for chunk in stream:
                 content = str(chunk.choices[0].delta.content)
                 if content:
+                    # Print new content
+                    if self.console:
+                        self.console.print(content, end="")
+                    else:
+                        print(content, end="", flush=True)
+
+                    # Add to buffers
                     buffer += content
+                    display_buffer += content
 
                     # Look for answer tags
                     if "<answer>" in buffer and "</answer>" in buffer:
                         start_idx = buffer.index("<answer>") + len("<answer>")
                         end_idx = buffer.index("</answer>")
                         answer = buffer[start_idx:end_idx]
-
-                        # Show the content before answer tags
-                        pre_answer = buffer[: buffer.index("<answer>")]
-                        if pre_answer.strip():
-                            self.console.print(pre_answer)
-
-                        return buffer, {"answer": answer}
+                        return display_buffer, {"answer": answer}
 
                     # Look for JSON objects
                     json_objects = self._find_json_objects(buffer)
@@ -369,32 +591,25 @@ class Host:
                                 json_data = json.loads(json_str)
                                 mcpmessage = parse_request(json_data)
                                 if mcpmessage:
-                                    # Show content before JSON
-                                    pre_json = buffer[: buffer.index(json_str)]
-                                    if pre_json.strip():
-                                        self.console.print(pre_json)
-
                                     stream.close()
-                                    return buffer, mcpmessage
+                                    return display_buffer, mcpmessage
                             except json.JSONDecodeError:
                                 continue
 
         except KeyboardInterrupt:
+            # Handle cancellation gracefully
             logger.info("Query cancelled by user")
             if stream:
                 stream.close()
-            return buffer, None
+            return display_buffer, None
         except Exception as e:
             logger.error(f"Error in stream processing: {e}")
             if stream:
                 stream.close()
-            return buffer, None
+            return display_buffer, None
 
-        # Normal completion - show all content
-        if buffer.strip():
-            self.console.print(buffer)
-
-        return buffer, None
+        # Normal completion
+        return display_buffer, None
 
     def _find_json_objects(self, text):
         """
@@ -518,13 +733,11 @@ class Host:
         self, prompt: str, message_store: MessageStore = MessageStore()
     ) -> str | None:
         """
-        Enhanced query method that handles MCP agent loops.
-        Importable to Chat and one-off LLM applications like `twig`.
+        Enhanced query method that handles MCP agent loops with paned display.
         """
         # Initialize conversation with system prompt and user query
-        if self.system_message and not any(
-            [m for m in message_store.messages if m.role == "system"]  # type: ignore
-        ):
+        message_store.clear()
+        if self.system_message:
             message_store.add(self.system_message)
         message_store.add_new(role="user", content=prompt)
 
@@ -538,7 +751,6 @@ class Host:
                 # Found answer tags - we're done
                 answer = special_catch.get("answer")
                 if answer:
-                    message_store.add_new(role="assistant", content=answer)
                     return answer
                 # No answer found, continue with buffer
                 message_store.add_new(role="assistant", content=buffer)
@@ -550,37 +762,112 @@ class Host:
                 return buffer
 
             elif isinstance(special_catch, MCPMessage):
-                # Found MCP request - process it
+                # Found MCP request - display it immediately
                 message_store.add_new(role="assistant", content=buffer)
-                # Print out the MCP message so user can see.
-                request_text = (
-                    f"[MCP Request]\n{special_catch.model_dump_json(indent=2)}"
-                )
-                self.console.print(f"[yellow]{request_text}[/yellow]")
 
-                observation: MCPResult = self._process_message(special_catch)
-                if observation:
-                    # Check if this is an error result
-                    is_error = getattr(observation, "isError", False)
+                # Display the request on the left side immediately
+                layout = self._display_mcp_request(special_catch)
 
-                    if is_error:
-                        # Display error result but continue conversation
-                        observation_text = (
-                            f"[Server Error]\n{observation.model_dump_json(indent=2)}"
-                        )
+                # Process the request
+                try:
+                    observation: MCPResult = self._process_message(special_catch)
+
+                    if observation:
+                        # Update the display with the result on the right side
+                        self._update_with_mcp_result(layout, observation)
+
+                        # Check if this is an error result for text formatting
+                        is_error = getattr(observation, "isError", False)
+
+                        if is_error:
+                            observation_text = f"[Server Error]\n{observation.model_dump_json(indent=2)}"
+                        else:
+                            observation_text = f"[Tool Result]\n{observation.model_dump_json(indent=2)}"
+
                         message_store.add_new(role="user", content=observation_text)
-                        self.console.print(f"[red]{observation_text}[/red]")
-                    else:
-                        # Display normal result
-                        observation_text = (
-                            f"[Tool Result]\n{observation.model_dump_json(indent=2)}"
-                        )
-                        message_store.add_new(role="user", content=observation_text)
-                        self.console.print(f"[green]{observation_text}[/green]")
+                        # Continue the loop to get the next response
+                        continue
 
-                    message_store.add_new(role="user", content=observation_text)
-                    # Continue the loop to get the next response
+                except Exception as e:
+                    # Handle processing errors
+                    error_text = f"Error processing MCP request: {str(e)}"
+                    error_panel = Panel(
+                        Text(error_text, style="red"),
+                        title="[red]Processing Error[/red]",
+                        border_style="red",
+                        expand=True,
+                    )
+                    layout["result"].update(error_panel)
+                    self.console.print("\n")
+                    self.console.print(layout)
+
+                    message_store.add_new(role="user", content=f"[Error]\n{error_text}")
                     continue
+
+    # def agent_query(
+    #     self, prompt: str, message_store: MessageStore = MessageStore()
+    # ) -> str | None:
+    #     """
+    #     Enhanced query method that handles MCP agent loops.
+    #     Importable to Chat and one-off LLM applications like `twig`.
+    #     """
+    #     # Initialize conversation with system prompt and user query
+    #     message_store.clear()
+    #     if self.system_message:
+    #         message_store.add(self.system_message)
+    #     message_store.add_new(role="user", content=prompt)
+    #
+    #     # Agent loop
+    #     while True:
+    #         # Query model with streaming
+    #         stream = self.model.stream(message_store.messages, verbose=False)
+    #         buffer, special_catch = self._process_stream(stream)
+    #
+    #         if isinstance(special_catch, dict):
+    #             # Found answer tags - we're done
+    #             answer = special_catch.get("answer")
+    #             if answer:
+    #                 return answer
+    #             # No answer found, continue with buffer
+    #             message_store.add_new(role="assistant", content=buffer)
+    #             return buffer
+    #
+    #         elif special_catch is None:
+    #             # No special content found, just a normal response
+    #             message_store.add_new(role="assistant", content=buffer)
+    #             return buffer
+    #
+    #         elif isinstance(special_catch, MCPMessage):
+    #             # Found MCP request - process it
+    #             message_store.add_new(role="assistant", content=buffer)
+    #             # Print out the MCP message so user can see.
+    #             request_text = (
+    #                 f"[MCP Request]\n{special_catch.model_dump_json(indent=2)}"
+    #             )
+    #             self.console.print(f"[yellow]{request_text}[/yellow]")
+    #
+    #             observation: MCPResult = self._process_message(special_catch)
+    #             if observation:
+    #                 # Check if this is an error result
+    #                 is_error = getattr(observation, "isError", False)
+    #
+    #                 if is_error:
+    #                     # Display error result but continue conversation
+    #                     observation_text = (
+    #                         f"[Server Error]\n{observation.model_dump_json(indent=2)}"
+    #                     )
+    #                     self.console.print(f"[red]{observation_text}[/red]")
+    #                 else:
+    #                     # Display normal result
+    #                     observation_text = (
+    #                         f"[Tool Result]\n{observation.model_dump_json(indent=2)}"
+    #                     )
+    #                     self.console.print(f"[green]{observation_text}[/green]")
+    #
+    #                 message_store.add_new(role="user", content=observation_text)
+    #                 # Continue the loop to get the next response
+    #                 continue
+    #
 
     def _convert_PromptMessage_to_Message(
         self, prompt_message: PromptMessage

@@ -262,7 +262,7 @@ class ServerRoute:
         if request.params.name not in [tool.name for tool in self.registry.tools]:
             raise ValueError(f"Tool {request.params.name} not found in registry.")
         for tool in self.registry.tools:
-            if tool_name == request.params.name:
+            if tool.name == request.params.name:
                 request_dict = request.model_dump()
                 # Call the tool with the provided arguments
                 # TBD: we also have ImageContent and EmbeddedResource besides TextContent; implement later.
