@@ -1,0 +1,2 @@
+2025-07-05 17:58:01,287 [INFO] mcplite:95 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
+2025-07-05 17:58:01,287 [INFO] mcplite:44 (<module>) - Initializing MCPLite application
