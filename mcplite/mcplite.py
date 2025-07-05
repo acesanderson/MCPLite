@@ -28,19 +28,10 @@ from MCPLite.transport import (
     SSEServerTransport,
 )
 from typing import Callable, Optional
+from MCPLite.logs.logging_config import get_logger
 
-from MCPLite.logs.logging_config import configure_logging
-import logging
-
-# Set up logging with trace mode for detailed flow tracking
-logger = configure_logging(
-    level=logging.DEBUG,  # Show all log levels
-    # level=logging.ERROR,  # Show only errors
-    log_file="mcplite_trace.log",  # Also save to file
-    trace_mode=True,  # Include line numbers and function names
-)
-
-# Set up our Server
+# Set up logger -- main config handled in mcpchat
+logger = get_logger(__name__)
 logger.info("Initializing MCPLite application")
 
 

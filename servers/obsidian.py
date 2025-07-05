@@ -32,19 +32,32 @@ for root, _, _ in os.walk(OBSIDIAN_ROOT):
     ALLOWED_DIRS_SET.add(str(Path(root).resolve()))
 
 
+def resolve_obsidian_path(path: str | Path) -> Path:
+    """
+    Resolve a path relative to the Obsidian vault root.
+    Handles both absolute and relative paths correctly.
+    """
+    path_obj = Path(path)
+
+    # If it's already absolute, use as-is
+    if path_obj.is_absolute():
+        return path_obj.resolve()
+
+    # If relative, resolve relative to OBSIDIAN_ROOT
+    return (OBSIDIAN_ROOT / path_obj).resolve()
+
+
 def is_path_within_obsidian_root(path_to_check: str | Path) -> bool:
     """Checks if the given path is within the OBSIDIAN_ROOT sandbox."""
     try:
-        resolved_path = Path(path_to_check).resolve()
-        # Python 3.9+
-        # return resolved_path.is_relative_to(OBSIDIAN_ROOT)
-        # Older Python:
+        # Use our new resolver that handles relative paths correctly
+        resolved_path = resolve_obsidian_path(path_to_check)
+
+        # Check if the resolved path is within OBSIDIAN_ROOT
         return str(resolved_path).startswith(str(OBSIDIAN_ROOT)) and (
             OBSIDIAN_ROOT == resolved_path or OBSIDIAN_ROOT in resolved_path.parents
         )
-    except (
-        Exception
-    ):  # Catches FileNotFoundError from resolve if path doesn't exist, or other errors
+    except Exception:
         return False
 
 
@@ -59,27 +72,35 @@ def search_files(path: str, pattern: str, excludePatterns: list[str] = []):
     Recursively search for files/directories from a starting directory
     within the OBSIDIAN_PATH.
     """
-    # Security: Ensure the starting search path is allowed
+    # Handle empty path by defaulting to OBSIDIAN_ROOT
+    if not path or path.strip() == "":
+        path = str(OBSIDIAN_ROOT)
+
     if not is_path_within_obsidian_root(path):
         raise ValueError(f"Search path '{path}' is outside the allowed sandbox.")
 
-    # Convert to Path object for consistency
-    search_root = Path(path).resolve()  # Resolve again to be absolutely sure
+    # Use the new resolver
+    search_root = resolve_obsidian_path(path)
 
-    if not search_root.is_dir():  # Check after resolving and security check
+    if not search_root.is_dir():
         raise ValueError(f"Path '{path}' is not a directory.")
-    # ... (rest of your validation and search logic)
-    # The os.walk will be rooted at search_root, which is already validated.
+
     matches = []
     for root_str, dirs, files in os.walk(search_root):
-        current_root = Path(root_str)  # For easier joining
+        current_root = Path(root_str)
         for name in files + dirs:
-            # full_path = os.path.join(root, name) # old
             full_path_obj = current_root / name
             if fnmatch.fnmatch(name, pattern) and not any(
                 fnmatch.fnmatch(name, ex) for ex in excludePatterns
             ):
-                matches.append(str(full_path_obj))  # Return strings as per original
+                # Return path relative to OBSIDIAN_ROOT for consistency
+                try:
+                    rel_path = full_path_obj.relative_to(OBSIDIAN_ROOT)
+                    matches.append(str(rel_path))
+                except ValueError:
+                    # If can't make relative, use absolute
+                    matches.append(str(full_path_obj))
+
     return matches
 
 
@@ -89,14 +110,19 @@ def read_file(path: str):
     if not is_path_within_obsidian_root(path):
         raise ValueError(f"Path '{path}' is outside the allowed sandbox.")
 
-    file_path = Path(
-        path
-    ).resolve()  # Resolve for safety, though is_path_within_obsidian_root does it
+    # Use the new resolver
+    file_path = resolve_obsidian_path(path)
+
     if not file_path.is_file():
         raise ValueError(f"Path '{path}' is not a file.")
+
     # Read the file
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+    try:
+        return file_path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        raise ValueError(f"File '{path}' is not a valid UTF-8 text file.")
+    except Exception as e:
+        raise ValueError(f"Error reading file '{path}': {str(e)}")
 
 
 @mcp.tool
@@ -112,7 +138,7 @@ def read_multiple_files(paths: list[str]):
     # Check if the paths are valid files
     contents = {}
     for path in paths:
-        file_path = Path(path).resolve()
+        file_path = resolve_obsidian_path(path)  # Use new resolver here
         if not file_path.is_file():
             raise ValueError(f"Path '{path}' is not a file.")
 
@@ -120,7 +146,6 @@ def read_multiple_files(paths: list[str]):
         try:
             contents[str(file_path)] = file_path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
-            # Handle binary files or non-UTF-8 text files
             raise ValueError(f"File '{path}' is not a valid UTF-8 text file.")
         except Exception as e:
             raise ValueError(f"Error reading file '{path}': {str(e)}")
@@ -134,59 +159,38 @@ def list_directory(path: str):
     List directory contents with [FILE] or [DIR] prefixes.
     The directory must be within the OBSIDIAN_PATH sandbox.
     """
-    # Security: Ensure the path is within the allowed sandbox
+    # Handle empty path by defaulting to OBSIDIAN_ROOT
+    if not path or path.strip() == "":
+        path = str(OBSIDIAN_ROOT)
+
     if not is_path_within_obsidian_root(path):
-        # This check in is_path_within_obsidian_root inherently handles
-        # if the path resolves correctly and is under OBSIDIAN_ROOT.
-        # If path doesn't exist, resolve() in the helper would raise FileNotFoundError,
-        # and is_path_within_obsidian_root would return False.
-        raise ValueError(
-            f"Path '{path}' is outside the allowed sandbox or does not resolve to a valid location within it."
-        )
+        raise ValueError(f"Path '{path}' is outside the allowed sandbox.")
 
-    # Convert to Path object and ensure it's the resolved, canonical path
-    # is_path_within_obsidian_root has already effectively done this,
-    # but doing it again here ensures dir_path is a resolved Path object.
-    dir_path = Path(path).resolve()
+    # Use the new resolver
+    dir_path = resolve_obsidian_path(path)
 
-    # Check if the resolved path is actually a directory
     if not dir_path.is_dir():
-        # This is important because is_path_within_obsidian_root might be true
-        # for a *file* within the sandbox, but this function requires a directory.
-        raise ValueError(f"Resolved path '{dir_path}' is not a directory.")
+        raise ValueError(f"Path '{path}' is not a directory.")
 
     # List the directory contents
     contents = []
     try:
-        for item in dir_path.iterdir():  # item is a Path object
-            # Determine prefix
-            # No need to re-check security of 'item' as it's directly under 'dir_path'
-            # which has already been validated.
+        for item in dir_path.iterdir():
             if item.is_file():
                 prefix = "[FILE]"
             elif item.is_dir():
                 prefix = "[DIR]"
             else:
-                # Could be a symlink to something else, or a special file type.
-                # For simplicity, we can skip or mark as [OTHER].
-                # If you need to handle symlinks specifically, you can use item.is_symlink().
-                prefix = "[OTHER]"  # Or you could choose to skip these
+                prefix = "[OTHER]"
 
             contents.append(f"{prefix} {item.name}")
 
     except PermissionError:
-        raise ValueError(
-            f"Permission denied to access directory contents of '{dir_path}'."
-        )
-    except FileNotFoundError:
-        # This might happen in a race condition if the directory is deleted
-        # between the is_dir() check and iterdir(), though unlikely.
-        raise ValueError(f"Directory '{dir_path}' not found during listing.")
+        raise ValueError(f"Permission denied to access directory contents of '{path}'.")
     except Exception as e:
-        # Catch-all for other OS-level errors during iteration
-        raise ValueError(f"Error listing directory '{dir_path}': {str(e)}")
+        raise ValueError(f"Error listing directory '{path}': {str(e)}")
 
-    return sorted(contents)  # Sort for consistent output
+    return sorted(contents)
 
 
 @mcp.tool

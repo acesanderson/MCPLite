@@ -1,6 +1,8 @@
 """
 Our dummy Transport class that sends JSON strings directly to a server function.
 No client/server separation, just a direct call to the server function.
+What happens under the hood:
+- ServerInfo object loads the mcp object (:MCPLite) from the server script. The server function is mcp.server.process_message.
 """
 
 from typing import Callable

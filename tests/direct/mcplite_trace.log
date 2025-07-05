@@ -1,8 +1,0 @@
-2025-05-15 10:08:08,374 [INFO] mcplite:95 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
-2025-05-15 10:08:08,739 [INFO] mcplite:95 (configure_logging) - Logging configured with level: DEBUG, trace_mode: True
-2025-05-15 10:08:08,739 [INFO] mcplite:44 (<module>) - Initializing MCPLite application
-2025-05-15 10:08:09,500 [DEBUG] instructor:127 (patch) - Patching `client.chat.completions.create` with mode=<Mode.TOOLS: 'tool_call'>
-2025-05-15 10:08:09,539 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
-2025-05-15 10:08:09,778 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
-2025-05-15 10:08:09,809 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
-2025-05-15 10:08:09,812 [INFO] googleapiclient.discovery_cache:49 (autodetect) - file_cache is only supported with oauth2client<4.0.0
